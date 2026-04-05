@@ -37,12 +37,6 @@ createRoot(document.getElementById('root')).render(
         <Route path="/pa3/cpa_basics" element={<CPAViz />} />
         <Route path="/pa3/cpa_attack" element={<CPAAttack />} />
         <Route path="/pa4" element={<PA4 />} />
-        <Route path="/part-1" element={<Part1 />} />
-        <Route path="/part-2" element={<Part2 />} />
-        <Route path="/part-3" element={<Part3 />} />
-        <Route path="/part-4" element={<Part4 />} />
-        <Route path="/part-5" element={<Part5 />} />
-        <Route path="/pa/:id" element={<PAView />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

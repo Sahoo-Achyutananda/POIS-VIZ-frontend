@@ -5,8 +5,8 @@ export const accordionData = [
     link: '/part-1',
     linkText: 'View',
     subItems: [
-      { title: 'PA #1 — One-Way Functions & Pseudorandom Generators', description: 'Implement DLP-based and AES-based OWFs, construct a PRG using the HILL hard-core-bit iterative construction, and verify output with NIST SP 800-22 statistical tests (frequency, runs, serial).', link: '/pa/1' },
-      { title: 'PA #2 — Pseudorandom Functions via GGM Tree', description: 'Build a PRF from a PRG using the GGM binary tree construction. Each query follows a root-to-leaf path defined by input bits. Includes an AES plug-in alternative and a distinguishing game demo.', link: '/pa/2' },
+      { title: 'PA #1 — One-Way Functions & Pseudorandom Generators', description: 'Implement DLP-based and AES-based OWFs, construct a PRG using the HILL hard-core-bit iterative construction, and verify output with NIST SP 800-22 statistical tests (frequency, runs, serial).', link: '/pa1' },
+      { title: 'PA #2 — Pseudorandom Functions via GGM Tree', description: 'Build a PRF from a PRG using the GGM binary tree construction. Each query follows a root-to-leaf path defined by input bits. Includes an AES plug-in alternative and a distinguishing game demo.', link: '/pa2' },
       {
         title: 'PA #3 — CPA-Secure Symmetric Encryption',
         description: 'Implement the Enc-then-PRF scheme C = ⟨r, Fk(r) ⊕ m⟩ with fresh randomness per encryption. Includes multi-block counter extension, IND-CPA game simulation, and a broken deterministic variant demonstrating the attack.',
