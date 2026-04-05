@@ -1,9 +1,11 @@
 import axios from 'axios'
 
+const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim()
+const baseURL = configuredBaseUrl || (import.meta.env.DEV ? 'http://localhost:8000' : '')
+
 const api = axios.create({
-  // Configure VITE_API_BASE_URL in .env for deployment.
-  // Local default points to FastAPI running on port 8000.
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  // Use a configured backend URL when provided; otherwise keep production calls same-origin.
+  baseURL,
   timeout: 15000,
 })
 
