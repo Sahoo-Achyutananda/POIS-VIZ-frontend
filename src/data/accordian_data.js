@@ -24,7 +24,15 @@ export const accordionData = [
         ]
       },
       { title: 'PA #4 — Modes of Operation', description: 'Implement CBC, OFB, and Randomized CTR modes for arbitrary-length messages using your own block cipher. Includes attack demos for IV-reuse in CBC and keystream-reuse in OFB, with a unified Encrypt(mode, k, M) API.', link: '/pa4' },
-      { title: 'PA #5 — Message Authentication Codes', description: 'Implement PRF-MAC (fixed-length), CBC-MAC (variable-length), and an HMAC stub. Includes an EUF-CMA forgery game and a length-extension attack demonstration on the naive H(k‖m) construction.', link: '/pa/5' },
+      {
+        title: 'PA #5 — Message Authentication Codes',
+        description: 'Implement PRF-MAC (fixed-length), CBC-MAC (variable-length), and an HMAC stub. Includes an EUF-CMA forgery game and a length-extension attack demonstration on the naive H(k‖m) construction.',
+        children: [
+          { title: 'MAC Basics (PRF vs CBC)', description: 'Explore fixed-length and variable-length MACs.', link: '/pa5/basics' },
+          { title: 'EUF-CMA Forgery Game', description: 'Attack the CBC-MAC by attempting to forge a valid tag.', link: '/pa5/euf_cma_game' },
+          { title: 'Length Extension Attack', description: 'Demonstrate naive hash MAC vulnerability.', link: '/pa5/length_extension' }
+        ]
+      },
       { title: 'PA #6 — CCA-Secure Symmetric Encryption', description: 'Implement Encrypt-then-MAC combining PA #3 and PA #5 with independent keys kE and kM. Includes IND-CCA2 game simulation and a malleability attack demo contrasting CPA-only vs CCA-secure schemes.', link: '/pa/6' }
     ]
   },

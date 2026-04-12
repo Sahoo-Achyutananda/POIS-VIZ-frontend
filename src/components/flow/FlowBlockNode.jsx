@@ -80,7 +80,7 @@ export default function FlowBlockNode({ data }) {
         {Array.isArray(data?.detailRows) && data.detailRows.length > 0 ? (
           <div className="rounded-md border border-white/15 bg-black/20 px-2 py-1">
             {data.detailRows.map((line) => (
-              <p className="truncate font-mono text-[10px] text-white/90" key={`${data.id}-${line}`} title={line}>
+              <p className="whitespace-pre-wrap break-all font-mono text-[10px] text-white/90" key={`${data.id}-${line}`} title={line}>
                 {line}
               </p>
             ))}

@@ -8,7 +8,10 @@ import PA1 from './pages/PA1.jsx'
 import PA2 from './pages/PA2.jsx'
 import CPAAttack from './pages/PA3/CPAAttack.jsx'
 import CPAViz from './pages/PA3/CPAViz.jsx'
-import PA4 from './pages/PA4.jsx'
+import PA4 from './pages/PA4/index.jsx'
+import PA5Theory from './pages/PA5/PA5Theory.jsx'
+import PA5CMAGame from './pages/PA5/PA5CMAGame.jsx'
+import PA5LengthExtension from './pages/PA5/PA5LengthExtension.jsx'
 
 const Part1 = () => <div style={{ padding: '40px', textAlign: 'center', minHeight: '100vh' }}><h1>Part I - Symmetric Key Cryptography</h1></div>
 const Part2 = () => <div style={{ padding: '40px', textAlign: 'center', minHeight: '100vh' }}><h1>Part II - Public-Key Cryptography</h1></div>
@@ -37,6 +40,9 @@ createRoot(document.getElementById('root')).render(
         <Route path="/pa3/cpa_basics" element={<CPAViz />} />
         <Route path="/pa3/cpa_attack" element={<CPAAttack />} />
         <Route path="/pa4" element={<PA4 />} />
+        <Route path="/pa5/basics" element={<PA5Theory />} />
+        <Route path="/pa5/euf_cma_game" element={<PA5CMAGame />} />
+        <Route path="/pa5/length_extension" element={<PA5LengthExtension />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
