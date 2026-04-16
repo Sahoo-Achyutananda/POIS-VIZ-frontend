@@ -125,10 +125,10 @@ export default function FlowCanvas({ nodes, edges, nodeTypes }) {
   }, [localNodes, setLocalNodes])
 
   return (
-    <div className="space-y-2 bg-(--code-bg) px-3 py-3">
-      <div className="text-xs text-(--text)">
+    <div className="space-y-2 bg-(--bg) px-3 py-3">
+      {/* <div className="text-xs text-(--text)">
         Visualized pipeline nodes: {nodes.length} | conversion edges: {edges.length}
-      </div>
+      </div> */}
       <div className="h-120 w-full overflow-hidden rounded-xl border border-[#2a3350] bg-[#0b1020] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.18)]">
         <ReactFlow
           nodes={localNodes}
@@ -148,8 +148,8 @@ export default function FlowCanvas({ nodes, edges, nodeTypes }) {
             backgroundSize: '12px 12px',
           }}
         >
-          <Background variant={BackgroundVariant.Lines} color="rgba(96, 165, 250, 0.08)" gap={12} size={1} />
-          <Background variant={BackgroundVariant.Lines} color="rgba(129, 140, 248, 0.12)" gap={60} size={1.4} />
+          <Background variant={BackgroundVariant.Lines} color="rgba(50, 1, 75, 0.27)" gap={60} size={1} />
+          <Background variant={BackgroundVariant.Lines} color="rgba(68, 26, 122, 0.41)" gap={120} size={1.4} />
           <MiniMap
             nodeColor={(node) => {
               if (node.data?.variant === 'input') return '#1d4ed8'

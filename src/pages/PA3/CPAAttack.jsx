@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import api from '../../lib/api'
 import { useEffect, useRef } from 'react'
-
+import PageHeader from '../../components/PageHeader'
+import Btn from '../../components/Btn'
 
 function getErrorText(error) {
   const detail = error?.response?.data?.detail
@@ -185,29 +186,7 @@ function CPAAttack() {
 	return (
 		<main className="min-h-screen w-full bg-(--bg) px-5 py-6 text-(--text) md:px-4">
 			<section className="w-full rounded-2xl border-2 border-(--border) bg-(--bg) p-3 shadow-(--shadow)">
-				<div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-(--border) bg-(--social-bg) px-3 py-2">
-					<strong className="text-sm text-(--text-h)">CS8.401 Minicrypt Clique Explorer - PA3: IND-CPA Chat Demo</strong>
-					<div className="inline-flex rounded-md border border-(--border) bg-(--bg) p-1">
-						<button
-							type="button"
-							onClick={() => setMode('secure')}
-							className={`rounded px-2.5 py-1 text-xs font-semibold transition-colors ${
-								mode === 'secure' ? 'bg-(--accent-bg) text-(--text-h)' : 'text-(--text) hover:bg-(--social-bg)'
-							}`}
-						>
-							Secure
-						</button>
-						<button
-							type="button"
-							onClick={() => setMode('broken')}
-							className={`rounded px-2.5 py-1 text-xs font-semibold transition-colors ${
-								mode === 'broken' ? 'bg-(--accent-bg) text-(--text-h)' : 'text-(--text) hover:bg-(--social-bg)'
-							}`}
-						>
-							Reuse nonce
-						</button>
-					</div>
-				</div>
+				<PageHeader title="CS8.401 Minicrypt Clique Explorer - PA3: IND-CPA Chat Demo" />
 
 				<section className="mb-3 rounded-lg border border-(--border) bg-(--code-bg) px-3 py-3 text-left">
 					<div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-5">
@@ -272,44 +251,24 @@ function CPAAttack() {
 												placeholder="m1"
 												disabled={loading || awaitingGuess}
 											/>
-											<button
-												type="button"
-												className="w-fit rounded-md border border-(--accent-border) bg-(--accent-bg) px-3 py-2 text-xs font-semibold text-(--text-h) transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow)"
-												onClick={handleSendChallengePair}
-												disabled={loading || awaitingGuess}
-											>
+											<Btn onClick={handleSendChallengePair} disabled={loading || awaitingGuess}>
 												Send Pair
-											</button>
+											</Btn>
 										</div>
 									</div>
 								) : (
 									<div className="rounded-md border border-(--border) bg-(--bg) p-3">
 										<h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-(--text-h)">Guess b</h4>
 										<div className="flex flex-wrap gap-2">
-											<button
-												type="button"
-												className="rounded-md border border-(--accent-border) bg-(--accent-bg) px-3 py-2 text-xs font-semibold text-(--text-h) transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow)"
-												onClick={() => handleGuess(0)}
-												disabled={loading || !awaitingGuess}
-											>
+											<Btn onClick={() => handleGuess(0)} disabled={loading || !awaitingGuess}>
 												Guess 0
-											</button>
-											<button
-												type="button"
-												className="rounded-md border border-(--accent-border) bg-(--accent-bg) px-3 py-2 text-xs font-semibold text-(--text-h) transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow)"
-												onClick={() => handleGuess(1)}
-												disabled={loading || !awaitingGuess}
-											>
+											</Btn>
+											<Btn onClick={() => handleGuess(1)} disabled={loading || !awaitingGuess}>
 												Guess 1
-											</button>
-											<button
-												type="button"
-												className="rounded-md border border-(--border) bg-(--bg) px-3 py-2 text-xs font-semibold text-(--text-h) transition-all duration-200 hover:bg-(--social-bg)"
-												onClick={handleReset}
-												disabled={loading}
-											>
+											</Btn>
+											<Btn variant="secondary" onClick={handleReset} disabled={loading}>
 												Reset
-											</button>
+											</Btn>
 										</div>
 									</div>
 								)}
@@ -347,14 +306,9 @@ function CPAAttack() {
 										placeholder="oracle query message"
 										disabled={loading || !awaitingGuess}
 									/>
-									<button
-										type="button"
-										className="rounded-md border border-(--accent-border) bg-(--accent-bg) px-3 py-2 text-xs font-semibold text-(--text-h) transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow)"
-										onClick={handleOracleQuery}
-										disabled={loading || !awaitingGuess}
-									>
+									<Btn onClick={handleOracleQuery} disabled={loading || !awaitingGuess}>
 										Ask Oracle
-									</button>
+									</Btn>
 								</div>
 							</div>
 						</article>

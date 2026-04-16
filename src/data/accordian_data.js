@@ -33,7 +33,15 @@ export const accordionData = [
           { title: 'Length Extension Attack', description: 'Demonstrate naive hash MAC vulnerability.', link: '/pa5/length_extension' }
         ]
       },
-      { title: 'PA #6 — CCA-Secure Symmetric Encryption', description: 'Implement Encrypt-then-MAC combining PA #3 and PA #5 with independent keys kE and kM. Includes IND-CCA2 game simulation and a malleability attack demo contrasting CPA-only vs CCA-secure schemes.', link: '/pa/6' }
+      {
+        title: 'PA #6 — CCA-Secure Symmetric Encryption',
+        description: 'Implement Encrypt-then-MAC combining PA #3 and PA #5 with independent keys kE and kM. Includes IND-CCA2 game simulation and a malleability attack demo contrasting CPA-only vs CCA-secure schemes.',
+        children: [
+          { title: 'Basics of CCA', description: 'Explore Encrypt-then-MAC basics.', link: '/pa6/basics' },
+          { title: 'Malleability Attack', description: 'Interactive bit-flip attack on CPA vs CCA.', link: '/pa6/malleability' },
+          { title: 'IND-CCA Simulation', description: 'Challenge-oracle game for CCA2 security.', link: '/pa6/cca_game' }
+        ]
+      }
     ]
   },
   {
@@ -42,9 +50,20 @@ export const accordionData = [
     link: '/part-2',
     linkText: 'Explore',
     subItems: [
-      { title: 'PA #7 — Merkle-Damgård Transform', description: 'Implement a generic MerkleDamgard(compress, IV, block_size) framework accepting any compression function. Includes MD-strengthening padding, a toy XOR-based compression plug-in, and a collision propagation demonstration.', link: '/pa/7' },
-      { title: 'PA #8 — DLP-Based Collision-Resistant Hash Function', description: 'Instantiate a provably collision-resistant compression function h(x,y) = g^x · ĥ^y mod p using a safe-prime group where DLP is hard. Plug into PA #7 to produce a full CRHF, with a birthday-bound collision demo.', link: '/pa/8' },
-      { title: 'PA #9 — Birthday Attack (Collision Finding)', description: 'Implement both naive sort-based and Floyd cycle-detection birthday attacks. Run on truncated DLP hash with n ∈ {8,10,12,14,16} output bits, plot empirical vs theoretical collision curves, and confirm O(2^(n/2)) behaviour.', link: '/pa/9' },
+      { 
+        title: 'PA #7 — Merkle-Damgård Transform', 
+        description: 'Implement a generic MerkleDamgard(compress, IV, block_size) framework accepting any compression function. Includes MD-strengthening padding and XOR-based compression.',
+        children: [
+          { title: 'Interactive Chain Viewer', description: 'Explore the full process of padding, chunking, and chaining with real-time avalanche visualization.', link: '/pa7/md_chain' },
+          { title: 'Collision Propagation Demo', description: 'Demonstrate mathematically that a collision in the compression function leads to a collision in the full hash.', link: '/pa7/collision' }
+        ]
+      },
+      { 
+        title: 'PA #8 — DLP-Based Collision-Resistant Hash Function', 
+        description: 'Instantiate a provably collision-resistant compression function h(x,y) = g^x · ĥ^y mod p using a safe-prime group where DLP is hard. Plug into PA #7 to produce a full CRHF, with a birthday-bound collision demo.', 
+        link: '/pa8/dlp_hash' 
+      },
+      { title: 'PA #9 — Birthday Attack (Collision Finding)', description: 'Implement both naive sort-based and Floyd cycle-detection birthday attacks. Run on truncated DLP hash with n ∈ {8,10,12,14,16} output bits, plot empirical vs theoretical collision curves, and confirm O(2^(n/2)) behaviour.', link: '/pa9/birthday' },
       { title: 'PA #10 — HMAC and HMAC-Based CCA-Secure Encryption', description: 'Implement HMAC over your PA #8 DLP hash with correct key padding and constant-time verification. Demonstrate length-extension attack failure, rebuild CCA-secure Encrypt-then-HMAC, and prove the CRHF ↔ MAC bidirectional equivalence.', link: '/pa/10' }
     ]
   },

@@ -1,5 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import api from '../../lib/api'
+import PageHeader from '../../components/PageHeader'
+import Btn from '../../components/Btn'
 
 function getErrorText(error) {
   const detail = error?.response?.data?.detail
@@ -112,18 +114,7 @@ export default function PA5CMAGame() {
   return (
     <main className="min-h-screen w-full bg-(--bg) px-5 py-6 text-(--text) md:px-4">
       <section className="w-full rounded-2xl border-2 border-(--border) bg-(--bg) p-3 shadow-(--shadow)">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-(--border) bg-(--social-bg) px-3 py-2">
-          <strong className="text-sm text-(--text-h)">CS8.401 Minicrypt Clique Explorer - PA5: EUF-CMA Forgery Game</strong>
-          <div className="inline-flex rounded-md border border-(--border) bg-(--bg) p-1">
-            <button
-              type="button"
-              onClick={fetchChallenges}
-              className="rounded px-2.5 py-1 text-xs font-semibold text-(--text) transition-colors hover:bg-(--social-bg)"
-            >
-              Regenerate Challenges
-            </button>
-          </div>
-        </div>
+        <PageHeader title="CS8.401 Minicrypt Clique Explorer - PA5: EUF-CMA Forgery Game" />
 
         <section className="mb-3 rounded-lg border border-(--border) bg-(--code-bg) px-3 py-3 text-left">
           <div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
@@ -181,14 +172,9 @@ export default function PA5CMAGame() {
                       placeholder="t_hex (forged tag)"
                       disabled={loading}
                     />
-                    <button
-                      type="button"
-                      className="w-fit rounded-md border border-(--accent-border) bg-(--accent-bg) px-3 py-2 text-xs font-semibold text-(--text-h) transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow)"
-                      onClick={handleForge}
-                      disabled={loading}
-                    >
+                    <Btn onClick={handleForge} disabled={loading}>
                       Submit Forgery
-                    </button>
+                    </Btn>
                   </div>
                 </div>
               </div>

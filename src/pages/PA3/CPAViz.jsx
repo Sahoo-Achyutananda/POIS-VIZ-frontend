@@ -4,6 +4,8 @@ import api from '../../lib/api'
 import FlowCanvas from '../../components/flow/FlowCanvas'
 import FlowBlockNode, { FLOW_BLOCK_NODE_TYPE } from '../../components/flow/FlowBlockNode'
 import { buildPa3DecryptionFlow, buildPa3EncryptionFlow } from '../../conversions/pa3/flow'
+import PageHeader from '../../components/PageHeader'
+import Btn from '../../components/Btn'
 
 function getErrorText(error) {
     const detail = error?.response?.data?.detail
@@ -118,10 +120,7 @@ function CPAViz() {
     return (
         <main className="min-h-screen w-full bg-(--bg) px-5 py-6 text-(--text) md:px-4">
             <section className="w-full rounded-2xl border-2 border-(--border) bg-(--bg) p-3 shadow-(--shadow)">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-(--border) bg-(--social-bg) px-3 py-2">
-                    <strong className="text-sm text-(--text-h)">CS8.401 Minicrypt Clique Explorer - PA3: CPA Basics</strong>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-(--text)">Frontend wired for API calls</span>
-                </div>
+                <PageHeader title="CS8.401 Minicrypt Clique Explorer - PA3: CPA Basics" />
 
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                     <article className="rounded-lg border border-(--border) bg-(--bg) transition-all duration-200 hover:-translate-y-0.5 hover:border-(--accent-border) hover:shadow-(--shadow)">
@@ -139,15 +138,14 @@ function CPAViz() {
                                         onChange={(e) => setEncKey(e.target.value)}
                                         placeholder="00112233445566778899aabbccddeeff"
                                     />
-                                    <button
-                                        type="button"
-                                        className="rounded-md border border-(--accent-border) bg-(--accent-bg) px-2 py-1 text-sm font-semibold text-(--text-h) transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow)"
+                                    <Btn
+                                        size="sm"
                                         onClick={handleGenerateKey}
                                         title="Generate random key"
                                         aria-label="Generate random key"
                                     >
                                         ↻
-                                    </button>
+                                    </Btn>
                                     {/* <button
                                         type="button"
                                         className="rounded-md border border-(--border) bg-(--bg) px-2 py-1 text-sm font-semibold text-(--text-h) transition-all duration-200 hover:bg-(--social-bg)"
@@ -174,14 +172,9 @@ function CPAViz() {
                                 />
                             </label>
 
-                            <button
-                                type="button"
-                                className="w-fit rounded-md border border-(--accent-border) bg-(--accent-bg) px-3 py-2 text-sm font-semibold text-(--text-h) transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow) disabled:cursor-wait disabled:opacity-60"
-                                onClick={runEncrypt}
-                                disabled={encLoading}
-                            >
+                            <Btn onClick={runEncrypt} disabled={encLoading}>
                                 {encLoading ? 'Encrypting...' : 'Encrypt'}
-                            </button>
+                            </Btn>
                         </div>
 
                         <div className="border-t border-dashed border-(--border) px-3 py-3 text-left">
@@ -236,14 +229,9 @@ function CPAViz() {
                                 />
                             </label>
 
-                            <button
-                                type="button"
-                                className="w-fit rounded-md border border-(--accent-border) bg-(--accent-bg) px-3 py-2 text-sm font-semibold text-(--text-h) transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow) disabled:cursor-wait disabled:opacity-60"
-                                onClick={runDecrypt}
-                                disabled={decLoading}
-                            >
+                            <Btn onClick={runDecrypt} disabled={decLoading}>
                                 {decLoading ? 'Decrypting...' : 'Decrypt'}
-                            </button>
+                            </Btn>
                         </div>
 
                         <div className="border-t border-dashed border-(--border) px-3 py-3 text-left">

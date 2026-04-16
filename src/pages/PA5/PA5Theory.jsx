@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import api from '../../lib/api'
+import PageHeader from '../../components/PageHeader'
+import Btn from '../../components/Btn'
 
 function getErrorText(error) {
   const detail = error?.response?.data?.detail
@@ -72,9 +74,7 @@ export default function PA5Theory() {
   return (
     <main className="min-h-screen w-full bg-(--bg) px-5 py-6 text-(--text) md:px-4">
       <section className="w-full rounded-2xl border-2 border-(--border) bg-(--bg) p-3 shadow-(--shadow)">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-(--border) bg-(--social-bg) px-3 py-2">
-          <strong className="text-sm text-(--text-h)">CS8.401 Minicrypt - PA5: MAC Basics</strong>
-        </div>
+        <PageHeader title="CS8.401 Minicrypt Clique Explorer - PA5: MAC Basics" />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {/* Left panel */}
@@ -115,14 +115,9 @@ export default function PA5Theory() {
                 />
               </label>
 
-              <button
-                type="button"
-                onClick={handleGenerateMac}
-                disabled={loading}
-                className="mt-2 rounded-md border border-(--accent-border) bg-(--accent-bg) px-3 py-2 text-xs font-semibold text-(--text-h) transition-all hover:-translate-y-0.5"
-              >
+              <Btn onClick={handleGenerateMac} disabled={loading} className="mt-2">
                 Generate Tag
-              </button>
+              </Btn>
 
               {error && <p className="text-xs text-[#ff8aa1]">{error}</p>}
             </div>
@@ -151,14 +146,9 @@ export default function PA5Theory() {
                 />
               </label>
 
-              <button
-                type="button"
-                onClick={handleVerifyMac}
-                disabled={loading || !verifyTagHex}
-                className="mt-2 rounded-md border border-(--accent-border) bg-(--accent-bg) px-3 py-2 text-xs font-semibold text-(--text-h) transition-all hover:-translate-y-0.5"
-              >
+              <Btn onClick={handleVerifyMac} disabled={loading || !verifyTagHex} className="mt-2">
                 Verify Vrfy(k, m, tag)
-              </button>
+              </Btn>
 
               {isValid !== null && (
                 <div className={`mt-2 rounded border p-3 text-sm font-semibold ${isValid ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-rose-500 bg-rose-500/10 text-rose-400'}`}>

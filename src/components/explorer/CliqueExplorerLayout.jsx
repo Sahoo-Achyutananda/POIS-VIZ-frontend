@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 
 import SummaryTabs from '../summary/SummaryTabs'
 import api from '../../lib/api'
+import PageHeader from '../PageHeader'
+import Btn from '../Btn'
 
 const FORWARD_EDGES = [
   ['OWF', 'PRG', 'HILL construction'],
@@ -182,7 +184,8 @@ export default function CliqueExplorerLayout({
   return (
     <main className="min-h-screen w-full bg-(--bg) px-5 py-8 text-(--text) md:px-4">
       <section className="w-full rounded-2xl border-2 border-(--border) bg-(--bg) p-3 shadow-(--shadow)">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-(--border) bg-(--social-bg) px-3 py-2">
+        <PageHeader title={pageTitle} />
+        <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-(--border) bg-(--social-bg) px-3 py-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-(--text-h)">Foundation:</span>
             <button
@@ -209,7 +212,6 @@ export default function CliqueExplorerLayout({
               DLP (g^x mod p)
             </button>
           </div>
-          <strong className="text-sm text-(--text-h)">{pageTitle}</strong>
         </div>
 
         <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-(--border) bg-(--code-bg) px-3 py-2">
@@ -294,9 +296,9 @@ export default function CliqueExplorerLayout({
         </div>
 
         <div className="mt-3 flex items-center gap-3">
-          <button type="button" className="rounded-md border border-(--accent-border) bg-(--accent-bg) px-3 py-2 text-sm font-semibold text-(--text-h) transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow) disabled:cursor-wait disabled:opacity-60" onClick={runPipeline} disabled={loading}>
+          <Btn onClick={runPipeline} disabled={loading}>
             {loading ? 'Computing...' : 'Recompute Live Values'}
-          </button>
+          </Btn>
           {error ? <span className="text-sm text-[#ff8aa1]">{error}</span> : null}
         </div>
 

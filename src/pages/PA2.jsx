@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import api from '../lib/api'
+import PageHeader from '../components/PageHeader'
 
 function getErrorText(error) {
   const detail = error?.response?.data?.detail
@@ -88,6 +89,7 @@ export default function PA2() {
   return (
     <main className="min-h-screen w-full bg-(--bg) px-5 py-8 text-(--text) md:px-4">
       <section className="w-full rounded-2xl border-2 border-(--border) bg-(--bg) p-3 shadow-(--shadow)">
+        <PageHeader title="CS8.401 Minicrypt Clique Explorer - PA2: GGM Pseudorandom Function" />
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-(--border) bg-(--social-bg) px-3 py-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-(--text-h)">Foundation:</span>
