@@ -4,6 +4,7 @@ import SummaryTabs from '../summary/SummaryTabs'
 import api from '../../lib/api'
 import PageHeader from '../PageHeader'
 import Btn from '../Btn'
+import Tabs from '../Tabs'
 
 const FORWARD_EDGES = [
   ['OWF', 'PRG', 'HILL construction'],
@@ -190,11 +191,10 @@ export default function CliqueExplorerLayout({
             <span className="text-sm font-bold text-(--text-h)">Foundation:</span>
             <button
               type="button"
-              className={`rounded-md border px-2.5 py-1 text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow) ${
-                foundation === 'AES'
+              className={`rounded-md border px-2.5 py-1 text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow) ${foundation === 'AES'
                   ? 'border-(--accent-border) bg-(--accent-bg) text-(--text-h)'
                   : 'border-(--border) bg-(--bg) text-(--text)'
-              }`}
+                }`}
               onClick={() => setFoundation('AES')}
             >
               AES-128 (PRP)
@@ -202,11 +202,10 @@ export default function CliqueExplorerLayout({
             <span className="text-(--text)">/</span>
             <button
               type="button"
-              className={`rounded-md border px-2.5 py-1 text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow) ${
-                foundation === 'DLP'
+              className={`rounded-md border px-2.5 py-1 text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow) ${foundation === 'DLP'
                   ? 'border-(--accent-border) bg-(--accent-bg) text-(--text-h)'
                   : 'border-(--border) bg-(--bg) text-(--text)'
-              }`}
+                }`}
               onClick={() => setFoundation('DLP')}
             >
               DLP (g^x mod p)
@@ -216,20 +215,11 @@ export default function CliqueExplorerLayout({
 
         <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-(--border) bg-(--code-bg) px-3 py-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-(--text-h)">Conversions</span>
-          {conversionOptions.map((option) => (
-            <button
-              type="button"
-              key={option.key}
-              onClick={() => setActiveConversionKey(option.key)}
-              className={`rounded-md border px-2.5 py-1 text-xs font-semibold transition-all duration-200 ${
-                activeConversionKey === option.key
-                  ? 'border-(--accent-border) bg-(--accent-bg) text-(--text-h)'
-                  : 'border-(--border) bg-(--bg) text-(--text) hover:bg-(--social-bg)'
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
+          <Tabs
+            tabs={conversionOptions.map(opt => ({ key: opt.key, label: opt.label }))}
+            activeTab={activeConversionKey}
+            onTabChange={setActiveConversionKey}
+          />
         </div>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">

@@ -64,7 +64,14 @@ export const accordionData = [
         link: '/pa8/dlp_hash' 
       },
       { title: 'PA #9 — Birthday Attack (Collision Finding)', description: 'Implement both naive sort-based and Floyd cycle-detection birthday attacks. Run on truncated DLP hash with n ∈ {8,10,12,14,16} output bits, plot empirical vs theoretical collision curves, and confirm O(2^(n/2)) behaviour.', link: '/pa9/birthday' },
-      { title: 'PA #10 — HMAC and HMAC-Based CCA-Secure Encryption', description: 'Implement HMAC over your PA #8 DLP hash with correct key padding and constant-time verification. Demonstrate length-extension attack failure, rebuild CCA-secure Encrypt-then-HMAC, and prove the CRHF ↔ MAC bidirectional equivalence.', link: '/pa/10' }
+      {
+        title: 'PA #10 — HMAC and HMAC-Based CCA-Secure Encryption',
+        description: 'Implement HMAC over your PA #8 DLP hash with correct key padding (ipad/opad) and constant-time verification. Demonstrate length-extension attack failure on the broken H(k‖m) construction. Rebuild CCA-secure Encrypt-then-HMAC and prove the CRHF ↔ MAC bidirectional equivalence.',
+        children: [
+          { title: 'HMAC Construction Trace & Flow', description: 'Step-by-step walkthrough and React Flow visualisation of key padding, inner hash H((k⊕ipad)‖m), and outer hash H((k⊕opad)‖inner).', link: '/pa10/hmac' },
+          { title: 'Length-Extension Attack vs HMAC', description: 'Side-by-side demo: forge a valid tag for m‖pad‖m\' on the broken H(k‖m) MAC, then watch HMAC block the exact same attempt.', link: '/pa10/length-extension' },
+        ]
+      }
     ]
   },
   {

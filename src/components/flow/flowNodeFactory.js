@@ -9,6 +9,7 @@ import FlowMDOutputNode, { FLOW_MD_OUTPUT_NODE_TYPE } from './FlowMDOutputNode'
 import FlowDLPCompressNode, { FLOW_DLP_NODE_TYPE } from './FlowDLPCompressNode'
 import FlowDLPExpNode, { FLOW_DLP_EXP_NODE_TYPE } from './FlowDLPExpNode'
 import FlowDLPProdNode, { FLOW_DLP_PROD_NODE_TYPE } from './FlowDLPProdNode'
+import FlowFunctionNode, { FLOW_FUNCTION_NODE_TYPE } from './FlowFunctionNode'
 
 export {
   FLOW_BLOCK_NODE_TYPE,
@@ -20,6 +21,7 @@ export {
   FLOW_DLP_NODE_TYPE,
   FLOW_DLP_EXP_NODE_TYPE,
   FLOW_DLP_PROD_NODE_TYPE,
+  FLOW_FUNCTION_NODE_TYPE,
 }
 
 export const nodeTypes = {
@@ -32,6 +34,7 @@ export const nodeTypes = {
   [FLOW_DLP_NODE_TYPE]: FlowDLPCompressNode,
   [FLOW_DLP_EXP_NODE_TYPE]: FlowDLPExpNode,
   [FLOW_DLP_PROD_NODE_TYPE]: FlowDLPProdNode,
+  [FLOW_FUNCTION_NODE_TYPE]: FlowFunctionNode,
 }
 
 export function createFlowNode({
@@ -204,6 +207,18 @@ export function createDLPProdNode({ id, x, y, value, ...rest }) {
     type: FLOW_DLP_PROD_NODE_TYPE,
     position: { x, y },
     data: { id, value, ...rest },
+    style: { background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 },
+  }
+}
+/**
+ * Create a generic circular function node.
+ */
+export function createFlowFunctionNode({ id, x, y, ...rest }) {
+  return {
+    id,
+    type: FLOW_FUNCTION_NODE_TYPE,
+    position: { x, y },
+    data: { id, ...rest },
     style: { background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 },
   }
 }

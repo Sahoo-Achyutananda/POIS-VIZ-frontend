@@ -19,6 +19,7 @@ import InputPanel   from './InputPanel'
 import BitGrid      from './BitGrid'
 import IvReuseComparison from './IvReuseComparison'
 import FlowSection  from './FlowSection'
+import NavSidebar from '../../components/NavSidebar'
 
 const MAX_BYTES            = 64
 const BLOCK_SIZE           = 16
@@ -300,9 +301,12 @@ export default function PA4() {
     <main className="min-h-screen w-full bg-(--bg) px-5 py-6 text-(--text) md:px-4">
       <section className="w-full rounded-2xl border-2 border-(--border) bg-(--bg) p-3 shadow-(--shadow)">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-(--border) bg-(--social-bg) px-3 py-2">
-          <strong className="text-sm text-(--text-h)">
-            CS8.401 Minicrypt Clique Explorer — PA4: Modes &amp; Bit-Flip Attack
-          </strong>
+          <div className="flex items-center gap-2">
+            <NavSidebar />
+            <strong className="text-sm text-(--text-h)">
+              CS8.401 Minicrypt Clique Explorer — PA4: Modes &amp; Bit-Flip Attack
+            </strong>
+          </div>
           
           <div className="flex items-center gap-1 rounded bg-black/40 p-1">
             <button

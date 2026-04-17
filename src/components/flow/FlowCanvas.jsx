@@ -8,6 +8,7 @@ import {
   ReactFlow,
   useEdgesState,
   useNodesState,
+  ReactFlowProvider,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
@@ -130,40 +131,42 @@ export default function FlowCanvas({ nodes, edges, nodeTypes }) {
         Visualized pipeline nodes: {nodes.length} | conversion edges: {edges.length}
       </div> */}
       <div className="h-120 w-full overflow-hidden rounded-xl border border-[#2a3350] bg-[#0b1020] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.18)]">
-        <ReactFlow
-          nodes={localNodes}
-          edges={localEdges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          nodeTypes={nodeTypes}
-          defaultEdgeOptions={defaultEdgeOptions}
-          nodesDraggable
-          fitView
-          minZoom={0.2}
-          maxZoom={1.6}
-          proOptions={{ hideAttribution: true }}
-          style={{
-            backgroundColor: '#0b1020',
-            backgroundImage: 'linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px)',
-            backgroundSize: '12px 12px',
-          }}
-        >
-          <Background variant={BackgroundVariant.Lines} color="rgba(50, 1, 75, 0.27)" gap={60} size={1} />
-          <Background variant={BackgroundVariant.Lines} color="rgba(68, 26, 122, 0.41)" gap={120} size={1.4} />
-          <MiniMap
-            nodeColor={(node) => {
-              if (node.data?.variant === 'input') return '#1d4ed8'
-              if (node.data?.variant === 'output') return '#ec4899'
-              if (node.data?.variant === 'info') return '#dc2626'
-              if (node.data?.variant === 'neutral') return '#334155'
-              return '#9333ea'
+        <ReactFlowProvider>
+          <ReactFlow
+            nodes={localNodes}
+            edges={localEdges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            defaultEdgeOptions={defaultEdgeOptions}
+            nodesDraggable
+            fitView
+            minZoom={0.2}
+            maxZoom={1.6}
+            proOptions={{ hideAttribution: true }}
+            style={{
+              backgroundColor: '#0b1020',
+              backgroundImage: 'linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px)',
+              backgroundSize: '12px 12px',
             }}
-            maskColor="rgba(2, 6, 23, 0.45)"
-            pannable
-            zoomable
-          />
-          <Controls />
-        </ReactFlow>
+          >
+            <Background variant={BackgroundVariant.Lines} color="rgba(50, 1, 75, 0.27)" gap={60} size={1} />
+            <Background variant={BackgroundVariant.Lines} color="rgba(68, 26, 122, 0.41)" gap={120} size={1.4} />
+            <MiniMap
+              nodeColor={(node) => {
+                if (node.data?.variant === 'input') return '#1d4ed8'
+                if (node.data?.variant === 'output') return '#ec4899'
+                if (node.data?.variant === 'info') return '#dc2626'
+                if (node.data?.variant === 'neutral') return '#334155'
+                return '#9333ea'
+              }}
+              maskColor="rgba(2, 6, 23, 0.45)"
+              pannable
+              zoomable
+            />
+            <Controls />
+          </ReactFlow>
+        </ReactFlowProvider>
       </div>
     </div>
   )

@@ -20,6 +20,8 @@ import MDChainViewer from './pages/PA7/MDChainViewer.jsx'
 import MDCollisionDemo from './pages/PA7/MDCollisionDemo.jsx'
 import DLPHashDemo from './pages/PA8/DLPHashDemo.jsx'
 import BirthdayAttackDemo from './pages/PA9/BirthdayAttackDemo.jsx'
+import HMACDemo from './pages/PA10/HMACDemo.jsx'
+import LengthExtensionDemo from './pages/PA10/LengthExtensionDemo.jsx'
 import CliqueExplored from './pages/CliqueExplored.jsx'
 
 const Part1 = () => <div style={{ padding: '40px', textAlign: 'center', minHeight: '100vh' }}><h1>Part I - Symmetric Key Cryptography</h1></div>
@@ -60,6 +62,8 @@ createRoot(document.getElementById('root')).render(
         <Route path="/pa7/collision"       element={<W><MDCollisionDemo /></W>} />
         <Route path="/pa8/dlp_hash"        element={<W><DLPHashDemo /></W>} />
         <Route path="/pa9/birthday"        element={<W><BirthdayAttackDemo /></W>} />
+        <Route path="/pa10/hmac"            element={<W><HMACDemo /></W>} />
+        <Route path="/pa10/length-extension" element={<W><LengthExtensionDemo /></W>} />
         <Route path="/clique-explored"     element={<CliqueExplored />} />
       </Routes>
     </BrowserRouter>
