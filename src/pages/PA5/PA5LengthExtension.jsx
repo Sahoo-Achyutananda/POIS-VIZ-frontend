@@ -1,5 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import api from '../../lib/api'
+import NavSidebar from '../../components/NavSidebar'
 
 function getErrorText(error) {
   const detail = error?.response?.data?.detail
@@ -9,6 +11,8 @@ function getErrorText(error) {
 }
 
 export default function PA5LengthExtension() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const oracleChatRef = useRef(null)
   const extenderChatRef = useRef(null)
   const detectorChatRef = useRef(null)
@@ -168,6 +172,12 @@ export default function PA5LengthExtension() {
     }
   }
 
+  // Pre-fill from PA10 navigation state
+  useEffect(() => {
+    if (location.state?.messageHex) setOriginalMessage(location.state.messageHex)
+    if (location.state?.suffixHex)  setSuffixHex(location.state.suffixHex)
+  }, [location.state])
+
   useEffect(() => {
     if (oracleChatRef.current) oracleChatRef.current.scrollTop = oracleChatRef.current.scrollHeight
   }, [oracleChat])
@@ -184,7 +194,10 @@ export default function PA5LengthExtension() {
         
         {/* Header with Key input */}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-(--border) bg-(--social-bg) px-3 py-2">
-          <strong className="text-sm text-(--text-h)">PA5: Length Extension Pipeline (3-Window Attack)</strong>
+          <div className="flex items-center gap-2">
+            <NavSidebar />
+            <strong className="text-sm text-(--text-h)">PA5: Length Extension Pipeline (3-Window Attack)</strong>
+          </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-(--text-h)">Secret Key (k) Hex:</span>
             <input
@@ -197,11 +210,40 @@ export default function PA5LengthExtension() {
         </div>
 
         {/* Info Banner */}
-        <section className="mb-3 rounded-lg border border-(--border) bg-(--code-bg) px-3 py-3 text-left">
+        {/* <section className="mb-3 rounded-lg border border-(--border) bg-(--code-bg) px-3 py-3 text-left">
           <p className="m-0 text-[11px] leading-relaxed text-(--text)/80">
             <strong className="text-(--text-h)">The Pipeline:</strong> 1. Query Oracle for a baseline tag. ⮕ 2. Use Extender to compute new state from tag + suffix. ⮕ 3. Submit forgery to Challenger.
           </p>
-        </section>
+        </section> */}
+
+        {/* ── Pre-fill hint (shown only when arriving from PA10) ── */}
+        {location.state?.messageHex && (
+          <div className="mb-3 flex items-center justify-between rounded-lg border border-(--accent-border) bg-(--accent-bg)/30 px-3 py-2">
+            <p className="text-[11px] text-(--text-h)">
+              Message and suffix pre-filled from PA10. Set your own key, then hit <strong>Query Oracle</strong> to start the attack.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate(location.pathname, { replace: true, state: null })}
+              className="ml-3 shrink-0 text-[11px] text-(--text)/40 hover:text-(--text) transition-colors"
+            >dismiss</button>
+          </div>
+        )}
+
+        {/* ── Related page link ── */}
+        {/* <div className="mb-3 flex items-center justify-between rounded-lg border border-(--border) bg-(--code-bg) px-3 py-2">
+          <p className="text-[11px] text-(--text)/50">
+            Want the visual side-by-side comparison of broken MAC vs HMAC?
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/pa10/length-extension')}
+            className="flex items-center gap-1.5 rounded-md border border-(--border) bg-(--bg) px-3 py-1 text-[11px] font-semibold text-(--text-h) transition-all hover:border-(--accent-border) hover:bg-(--accent-bg)"
+          >
+            PA10: MAC vs HMAC Demo
+            <span className="text-(--accent)">→</span>
+          </button>
+        </div> */}
 
         {/* 3-Chat Display */}
         <section className="flex h-[73vh] min-h-0 flex-col overflow-hidden rounded-lg border border-(--border) bg-(--bg)">

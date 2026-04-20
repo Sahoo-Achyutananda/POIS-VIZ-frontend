@@ -76,6 +76,27 @@ export default function NavSidebar() {
 
         {/* Scrollable tree */}
         <div className="flex-1 overflow-y-auto py-3 px-3 space-y-2">
+          {/* Clique Explorer — direct bar, no expansion */}
+          <button
+            type="button"
+            onClick={() => go('/clique-explorer')}
+            className={`group w-full rounded-md border px-3 py-2.5 text-left transition-all duration-200 ${
+              location.pathname === '/clique-explorer'
+                ? 'border-amber-400/60 bg-amber-500/15'
+                : 'border-amber-500/25 bg-amber-500/5 hover:border-amber-400/50 hover:bg-amber-500/10'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex-1 min-w-0">
+                <p className="m-0 text-[10px] font-black uppercase tracking-widest text-amber-400/70 mb-0.5">Unified Explorer</p>
+                <p className={`m-0 text-xs font-semibold leading-snug ${location.pathname === '/clique-explorer' ? 'text-amber-200' : 'text-amber-100/80 group-hover:text-amber-100'}`}>
+                  Minicrypt Clique Explorer
+                </p>
+              </span>
+              <span className="shrink-0 text-amber-400/60 group-hover:text-amber-300 transition-all duration-200 group-hover:translate-x-0.5 text-sm">→</span>
+            </div>
+          </button>
+
           {accordionData.map((part, partIdx) => (
             <div
               key={partIdx}

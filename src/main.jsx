@@ -7,6 +7,7 @@ import App from './App.jsx'
 import PageShell from './components/PageShell.jsx'
 import PA1 from './pages/PA1.jsx'
 import PA2 from './pages/PA2.jsx'
+import GGMVisualizer from './pages/PA2/GGMVisualizer.jsx'
 import CPAAttack from './pages/PA3/CPAAttack.jsx'
 import CPAViz from './pages/PA3/CPAViz.jsx'
 import PA4 from './pages/PA4/index.jsx'
@@ -23,6 +24,7 @@ import BirthdayAttackDemo from './pages/PA9/BirthdayAttackDemo.jsx'
 import HMACDemo from './pages/PA10/HMACDemo.jsx'
 import LengthExtensionDemo from './pages/PA10/LengthExtensionDemo.jsx'
 import CliqueExplored from './pages/CliqueExplored.jsx'
+import CliqueExplorer from './pages/CliqueExplorer/index.jsx'
 
 const Part1 = () => <div style={{ padding: '40px', textAlign: 'center', minHeight: '100vh' }}><h1>Part I - Symmetric Key Cryptography</h1></div>
 const Part2 = () => <div style={{ padding: '40px', textAlign: 'center', minHeight: '100vh' }}><h1>Part II - Public-Key Cryptography</h1></div>
@@ -49,6 +51,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/" element={<App />} />
         <Route path="/pa1"                 element={<W><PA1 /></W>} />
         <Route path="/pa2"                 element={<W><PA2 /></W>} />
+        <Route path="/pa2/ggm"             element={<W><GGMVisualizer /></W>} />
         <Route path="/pa3/cpa_basics"      element={<W><CPAViz /></W>} />
         <Route path="/pa3/cpa_attack"      element={<W><CPAAttack /></W>} />
         <Route path="/pa4"                 element={<W><PA4 /></W>} />
@@ -64,6 +67,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/pa9/birthday"        element={<W><BirthdayAttackDemo /></W>} />
         <Route path="/pa10/hmac"            element={<W><HMACDemo /></W>} />
         <Route path="/pa10/length-extension" element={<W><LengthExtensionDemo /></W>} />
+        <Route path="/clique-explorer"     element={<W><CliqueExplorer /></W>} />
         <Route path="/clique-explored"     element={<CliqueExplored />} />
       </Routes>
     </BrowserRouter>
