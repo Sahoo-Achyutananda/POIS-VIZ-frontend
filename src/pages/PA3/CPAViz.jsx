@@ -1,5 +1,6 @@
 
 import { useMemo, useState } from 'react'
+import { RotateCcw } from 'lucide-react'
 import api from '../../lib/api'
 import FlowCanvas from '../../components/flow/FlowCanvas'
 import FlowBlockNode, { FLOW_BLOCK_NODE_TYPE } from '../../components/flow/FlowBlockNode'
@@ -144,7 +145,7 @@ function CPAViz() {
                                         title="Generate random key"
                                         aria-label="Generate random key"
                                     >
-                                        ↻
+                                        <RotateCcw className="w-3 h-3" />
                                     </Btn>
                                     {/* <button
                                         type="button"

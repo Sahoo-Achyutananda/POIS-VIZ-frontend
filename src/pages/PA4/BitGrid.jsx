@@ -1,3 +1,4 @@
+import { Lock, AlertTriangle } from 'lucide-react'
 import { bytesToHex } from './utils'
 
 /**
@@ -32,7 +33,7 @@ export default function BitGrid({
       {!hasCipher ? (
         /* ── Empty state ── */
         <div className="flex flex-col items-center justify-center gap-3 px-4 py-10 text-center">
-          <span className="text-4xl opacity-60">🔒</span>
+          <Lock className="w-12 h-12 opacity-60 text-(--text)" />
           <p className="text-sm font-semibold text-(--text-h)">No ciphertext yet</p>
           <p className="max-w-xs text-xs text-(--text)/70">
             Type a message on the left — it encrypts automatically.
@@ -119,7 +120,7 @@ export default function BitGrid({
                 {decryptedText || '[not yet decrypted]'}
               </span>
               {isCorrupted && (
-                <span className="ml-2 text-[10px] text-[#f87171]/80">⚠ corrupted by bit-flip</span>
+                <span className="ml-2 inline-flex items-center gap-0.5 text-[10px] text-[#f87171]/80"><AlertTriangle className="w-3 h-3" /> corrupted by bit-flip</span>
               )}
             </p>
             {lastFlip ? (

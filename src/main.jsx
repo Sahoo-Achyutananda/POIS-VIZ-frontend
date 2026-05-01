@@ -23,9 +23,18 @@ import DLPHashDemo from './pages/PA8/DLPHashDemo.jsx'
 import BirthdayAttackDemo from './pages/PA9/BirthdayAttackDemo.jsx'
 import HMACDemo from './pages/PA10/HMACDemo.jsx'
 import LengthExtensionDemo from './pages/PA10/LengthExtensionDemo.jsx'
-import OTDemo from './pages/PA18/OTDemo.jsx'
-import CliqueExplored from './pages/CliqueExplored.jsx'
 import CliqueExplorer from './pages/CliqueExplorer/index.jsx'
+import MillerRabinDemo from './pages/PA13/MillerRabinDemo.jsx'
+import DHDemo from './pages/PA11/DHDemo.jsx'
+import RSADemo from './pages/PA12/RSADemo.jsx'
+import CRTDemo from './pages/PA14/CRTDemo.jsx'
+import SignatureDemo from './pages/PA15/SignatureDemo.jsx'
+import ElGamalDemo from './pages/PA16/ElGamalDemo.jsx'
+import SigncryptDemo from './pages/PA17/SigncryptDemo.jsx'
+import OTDemo from './pages/PA18/OTDemo.jsx'
+import SecureGateDemo from './pages/PA19/SecureGateDemo.jsx'
+import MPCDemo from './pages/PA20/MPCDemo.jsx'
+import CliqueExplored from './pages/CliqueExplored.jsx'
 
 const Part1 = () => <div style={{ padding: '40px', textAlign: 'center', minHeight: '100vh' }}><h1>Part I - Symmetric Key Cryptography</h1></div>
 const Part2 = () => <div style={{ padding: '40px', textAlign: 'center', minHeight: '100vh' }}><h1>Part II - Public-Key Cryptography</h1></div>
@@ -68,7 +77,26 @@ createRoot(document.getElementById('root')).render(
         <Route path="/pa9/birthday"        element={<W><BirthdayAttackDemo /></W>} />
         <Route path="/pa10/hmac"            element={<W><HMACDemo /></W>} />
         <Route path="/pa10/length-extension" element={<W><LengthExtensionDemo /></W>} />
+        <Route path="/pa13/miller-rabin"     element={<W><MillerRabinDemo /></W>} />
+        <Route path="/pa/13"                 element={<W><MillerRabinDemo /></W>} />
+        <Route path="/pa11/dh-exchange"      element={<W><DHDemo /></W>} />
+        <Route path="/pa/11"                 element={<W><DHDemo /></W>} />
+        <Route path="/pa12/rsa"              element={<W><RSADemo /></W>} />
+        <Route path="/pa/12"                 element={<W><RSADemo /></W>} />
+        <Route path="/pa14/crt"              element={<W><CRTDemo /></W>} />
+        <Route path="/pa/14"                 element={<W><CRTDemo /></W>} />
+        <Route path="/pa15/signatures"       element={<W><SignatureDemo /></W>} />
+        <Route path="/pa/15"                 element={<W><SignatureDemo /></W>} />
+        <Route path="/pa16/elgamal"          element={<W><ElGamalDemo /></W>} />
+        <Route path="/pa/16"                 element={<W><ElGamalDemo /></W>} />
+        <Route path="/pa17/signcrypt"        element={<W><SigncryptDemo /></W>} />
+        <Route path="/pa/17"                 element={<W><SigncryptDemo /></W>} />
         <Route path="/pa18/ot"               element={<W><OTDemo /></W>} />
+        <Route path="/pa/18"                 element={<W><OTDemo /></W>} />
+        <Route path="/pa19/gates"            element={<W><SecureGateDemo /></W>} />
+        <Route path="/pa/19"                 element={<W><SecureGateDemo /></W>} />
+        <Route path="/pa20/mpc"              element={<W><MPCDemo /></W>} />
+        <Route path="/pa/20"                 element={<W><MPCDemo /></W>} />
         <Route path="/clique-explorer"     element={<W><CliqueExplorer /></W>} />
         <Route path="/clique-explored"     element={<CliqueExplored />} />
       </Routes>

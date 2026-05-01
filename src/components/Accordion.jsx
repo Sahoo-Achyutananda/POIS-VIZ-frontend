@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ChevronRight } from 'lucide-react'
 
 export default function Accordion({ title, subtitle,subItems }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -29,12 +30,10 @@ export default function Accordion({ title, subtitle,subItems }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <span
-            className={`inline-block text-lg text-(--accent) transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`}
+          <ChevronRight
+            className={`w-4 h-4 text-(--accent) transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`}
             aria-hidden="true"
-          >
-            ›
-          </span>
+          />
         </div>
       </div>
 
@@ -66,12 +65,10 @@ export default function Accordion({ title, subtitle,subItems }) {
                         <p className="m-0 text-sm font-medium text-(--text-h)">{subItem.title}</p>
                         <p className="mt-1 text-xs leading-relaxed text-(--text)/80">{subItem.description}</p>
                       </span>
-                      <span
-                        className={`inline-block shrink-0 text-sm text-(--accent) transition-transform duration-300 ${openNested[idx] ? 'rotate-90' : ''}`}
+                      <ChevronRight
+                        className={`w-3.5 h-3.5 shrink-0 text-(--accent) transition-transform duration-300 ${openNested[idx] ? 'rotate-90' : ''}`}
                         aria-hidden="true"
-                      >
-                        ›
-                      </span>
+                      />
                     </button>
 
                     <div

@@ -3,6 +3,7 @@ import Accordion from './components/Accordion'
 import './App.css'
 import { accordionData } from './data/accordian_data'
 import CliqueGraph from './components/CliqueGraph'
+import { ArrowRight } from 'lucide-react'
 
 function CliqueExplorerBar() {
   const navigate = useNavigate()
@@ -24,9 +25,7 @@ function CliqueExplorerBar() {
             OWF → PRG → PRF → PRP → MAC → CRHF → HMAC — select any source and target, see the full reduction chain live
           </p>
         </div>
-        <span className="shrink-0 text-xl text-amber-400/60 group-hover:text-amber-300 transition-all duration-200 group-hover:translate-x-1">
-          →
-        </span>
+        <ArrowRight className="w-5 h-5 shrink-0 text-amber-400/60 group-hover:text-amber-300 transition-all duration-200 group-hover:translate-x-1" />
       </div>
     </button>
   )

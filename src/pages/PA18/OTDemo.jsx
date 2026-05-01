@@ -1,446 +1,806 @@
 import { useState, useCallback } from 'react'
+import axios from 'axios'
 import api from '../../lib/api'
 import PageHeader from '../../components/PageHeader'
 import Btn from '../../components/Btn'
 
-const GROUP_P = 23
+const pa18api = axios.create({ baseURL: api.defaults.baseURL, timeout: 120_000 })
 
-function FieldRow({ label, value, mono = true, highlight = false }) {
-  return (
-    <div className="space-y-0.5">
-      {label && (
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{label}</p>
-      )}
-      <div className={`rounded-lg border px-3 py-2 text-[12px] leading-relaxed break-all ${
-        mono ? 'font-mono' : ''
-      } ${
-        highlight
-          ? 'border-(--accent-border) bg-(--accent-bg) text-(--text-h)'
-          : 'border-(--border) bg-(--code-bg) text-(--text)'
-      }`}>
-        {value ?? <span className="opacity-30 italic">—</span>}
-      </div>
-    </div>
-  )
+function cx(...c) { return c.filter(Boolean).join(' ') }
+function hexOf(n) {
+  if (!n && n !== 0) return '—'
+  try { return '0x' + BigInt(n).toString(16).toUpperCase() } catch { return String(n) }
+}
+function short(s, n = 16) {
+  const str = String(s || '—')
+  return str.length <= n + 3 ? str : str.slice(0, n) + '…'
 }
 
-function StepBadge({ step, label, done }) {
-  return (
-    <div className={`flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-bold ${
-      done
-        ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
-        : 'border-(--border) bg-(--code-bg) text-(--text)/40'
-    }`}>
-      <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-black ${
-        done ? 'bg-emerald-500 text-black' : 'bg-(--border) text-(--text)/40'
-      }`}>{step}</span>
-      {label}
-    </div>
-  )
-}
+// ── UI primitives ──────────────────────────────────────────────────────────────
 
-function PanelHeader({ title, subtitle, role }) {
-  const colors = {
-    alice: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300',
-    bob:   'bg-pink-500/10   border-pink-500/30   text-pink-300',
+function Badge({ label, color = 'purple' }) {
+  const cls = {
+    green:  'bg-emerald-500/20 border-emerald-500/40 text-emerald-300',
+    red:    'bg-rose-500/20    border-rose-500/40    text-rose-300',
+    amber:  'bg-amber-500/20   border-amber-500/40   text-amber-300',
+    purple: 'bg-purple-500/20  border-purple-500/40  text-purple-300',
+    blue:   'bg-blue-500/20    border-blue-500/40    text-blue-300',
+    cyan:   'bg-cyan-500/20    border-cyan-500/40    text-cyan-300',
+    gray:   'bg-zinc-500/20    border-zinc-500/40    text-zinc-400',
   }
   return (
-    <div className="flex items-start justify-between border-b border-(--border) bg-(--accent-bg) px-4 py-3 rounded-t-xl">
-      <div className="flex flex-col items-start">
-        <span className={`mb-1 rounded-sm border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest ${colors[role]}`}>
-          {role === 'alice' ? 'Alice — Sender' : 'Bob — Receiver'}
-        </span>
-        <h3 className="text-sm font-bold text-(--text-h)">{title}</h3>
-        <p className="text-[12px] text-white/60 mt-0.5">{subtitle}</p>
-      </div>
-    </div>
+    <span className={cx(
+      'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wider',
+      cls[color] ?? cls.purple
+    )}>{label}</span>
   )
 }
 
-function TranscriptEntry({ step, from, to, label, value }) {
+function KV({ label, value, color = 'text-white', small = false }) {
   return (
-    <div className="flex items-start gap-3">
-      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-(--border) text-[10px] font-black text-(--text)/60">{step}</span>
-      <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-semibold text-(--text)/70">
-          <span className="text-indigo-300">{from}</span>
-          <span className="mx-1 text-(--text)/30">→</span>
-          <span className="text-pink-300">{to}</span>
-          <span className="mx-1.5 text-(--text)/30">·</span>
-          <span className="text-(--text)/50">{label}</span>
-        </p>
-        <p className="mt-0.5 font-mono text-[11px] text-(--text-h) break-all">{value}</p>
-      </div>
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[9px] font-black uppercase tracking-widest text-(--text)/40">{label}</span>
+      <span className={cx(small ? 'text-[10px]' : 'text-xs', 'font-mono break-all', color)}>
+        {value ?? '—'}
+      </span>
     </div>
   )
 }
 
-export default function OTDemo() {
-  const [m0, setM0] = useState('3')
-  const [m1, setM1] = useState('7')
-  const [choiceBit, setChoiceBit] = useState('0')
+function Spinner() { return <span className="inline-block animate-spin mr-1">⟳</span> }
 
-  const [setupData,   setSetupData]   = useState(null)
-  const [receiverData, setReceiverData] = useState(null)
-  const [encryptData, setEncryptData] = useState(null)
-  const [decryptData, setDecryptData] = useState(null)
-  const [cheatData,   setCheatData]   = useState(null)
+// ── Log message row ────────────────────────────────────────────────────────────
 
-  const [loadingSetup,   setLoadingSetup]   = useState(false)
-  const [loadingKeys,    setLoadingKeys]    = useState(false)
-  const [loadingEncrypt, setLoadingEncrypt] = useState(false)
-  const [loadingDecrypt, setLoadingDecrypt] = useState(false)
-  const [loadingCheat,   setLoadingCheat]   = useState(false)
+function LogRow({ step, from, to, content, type = 'normal' }) {
+  const arrowColor = type === 'send' ? 'text-blue-400' : type === 'recv' ? 'text-emerald-400' : 'text-purple-400'
+  return (
+    <div className={cx(
+      'flex gap-2 items-start rounded-lg border px-3 py-2 text-xs animate-in fade-in duration-300',
+      type === 'send'   ? 'border-blue-500/20   bg-blue-500/5'    :
+      type === 'recv'   ? 'border-emerald-500/20 bg-emerald-500/5' :
+      type === 'warn'   ? 'border-rose-500/20    bg-rose-500/5'    :
+      type === 'key'    ? 'border-purple-500/20  bg-purple-500/5'  :
+                          'border-(--border)      bg-(--code-bg)'
+    )}>
+      <span className="font-black text-[10px] shrink-0 mt-0.5 text-(--text)/40 w-4">{step}</span>
+      <span className={cx('font-black shrink-0 text-[10px]', arrowColor)}>
+        {from} → {to}
+      </span>
+      <span className="text-(--text)/70 leading-relaxed flex-1">{content}</span>
+    </div>
+  )
+}
+
+// ── Alice panel ────────────────────────────────────────────────────────────────
+
+function AlicePanel({ m0, m1, setM0, setM1, revealed }) {
+  return (
+    <div className="rounded-xl border-2 border-blue-500/30 bg-blue-500/5 p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-xl">👩</span>
+        <span className="font-black text-sm text-blue-300">Alice (Sender)</span>
+        <Badge label="Sender" color="blue" />
+      </div>
+      <p className="text-xs text-(--text)/60 italic">
+        Alice holds two secret messages. She never learns which one Bob chose.
+      </p>
+      <div className="space-y-2">
+        <div className="space-y-1">
+          <label className="text-[10px] font-black uppercase tracking-widest text-blue-300/70">Message m₀</label>
+          <input value={m0} onChange={e => setM0(e.target.value)}
+            className="w-full rounded-lg border border-blue-500/30 bg-blue-500/8 px-3 py-2 text-sm text-white font-mono outline-none focus:border-blue-500/60 transition-all" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] font-black uppercase tracking-widest text-blue-300/70">Message m₁</label>
+          <input value={m1} onChange={e => setM1(e.target.value)}
+            className="w-full rounded-lg border border-blue-500/30 bg-blue-500/8 px-3 py-2 text-sm text-white font-mono outline-none focus:border-blue-500/60 transition-all" />
+        </div>
+      </div>
+      {revealed != null && (
+        <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-300">
+          ✓ Alice sent both encrypted messages. She does not know Bob's choice bit b=?.
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Bob panel ─────────────────────────────────────────────────────────────────
+
+function BobPanel({ b, onChoose, loading, result, onCheat, cheatResult, cheatLoading }) {
+  return (
+    <div className="rounded-xl border-2 border-emerald-500/30 bg-emerald-500/5 p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-xl">👨</span>
+        <span className="font-black text-sm text-emerald-300">Bob (Receiver)</span>
+        <Badge label="You" color="green" />
+      </div>
+      <p className="text-xs text-(--text)/60 italic">
+        Bob chooses which message to receive. Alice never learns his choice.
+      </p>
+
+      <div className="space-y-2">
+        <p className="text-[10px] font-black uppercase tracking-widest text-(--text)/50">Choose which message to receive:</p>
+        <div className="flex gap-3">
+          {[0, 1].map(choice => (
+            <button key={choice}
+              onClick={() => onChoose(choice)}
+              disabled={!!loading}
+              id={`pa18-choose-${choice}-btn`}
+              className={cx(
+                'flex-1 rounded-xl border-2 py-3 font-black text-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed',
+                b === choice
+                  ? 'border-emerald-500/60 bg-emerald-500/20 text-white shadow-emerald-500/20'
+                  : 'border-(--border) bg-(--code-bg) text-(--text)/60 hover:border-emerald-500/40 hover:text-white'
+              )}
+            >
+              {loading === choice ? <Spinner /> : null}
+              Choose {choice}
+              <div className="text-[10px] font-normal opacity-60 mt-1">Receive m{choice}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {result && (
+        <div className="space-y-3">
+          <div className={cx(
+            'rounded-xl border-2 p-3 space-y-2',
+            result.correct ? 'border-emerald-500/50 bg-emerald-500/8' : 'border-rose-500/50 bg-rose-500/8'
+          )}>
+            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-300">
+              📨 Bob receives:
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-lg bg-(--code-bg) border border-emerald-500/30 p-2 text-center">
+                <p className="text-[9px] text-emerald-300/60 uppercase tracking-wider">m{result.b} (revealed ✓)</p>
+                <p className="font-mono text-emerald-300 text-sm font-black mt-1">{result.m_received}</p>
+              </div>
+              <div className="rounded-lg bg-(--code-bg)/50 border border-(--border)/40 p-2 text-center opacity-50">
+                <p className="text-[9px] text-(--text)/40 uppercase tracking-wider">m{1 - result.b} (hidden)</p>
+                <p className="font-mono text-(--text)/30 text-sm font-black mt-1">??</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Btn onClick={onCheat} disabled={!!loading || !!cheatLoading}
+              variant="secondary" id="pa18-cheat-btn">
+              {cheatLoading ? <><Spinner />Attempting…</> : '🔓 Cheat: Try to Decrypt m' + (1 - result.b)}
+            </Btn>
+            {cheatResult && (
+              <div className={cx(
+                'rounded-xl border-2 p-3 text-xs space-y-1',
+                cheatResult.dlp_solved ? 'border-rose-500/50 bg-rose-500/5' : 'border-emerald-500/40 bg-emerald-500/5'
+              )}>
+                <p className="font-black">
+                  {cheatResult.dlp_solved ? '⚠ DLP solved (tiny group)' : '✅ Cheat failed — DLP not solved!'}
+                </p>
+                <p className="text-(--text)/60">{cheatResult.explanation}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── OT Demo Tab ────────────────────────────────────────────────────────────────
+
+function OTDemoTab() {
+  const [params, setParams]           = useState(null)
+  const [groupBits, setGroupBits]     = useState(32)
+  const [m0, setM0]                   = useState('42')
+  const [m1, setM1]                   = useState('99')
+  const [loading, setLoading]         = useState(null)
+  const [log, setLog]                 = useState([])
+  const [result, setResult]           = useState(null)
+  const [cheatResult, setCheatResult] = useState(null)
+  const [cheatLoading, setCheatLoading] = useState(false)
+  const [genLoading, setGenLoading]   = useState(false)
+  const [error, setError]             = useState('')
+
+  const addLog = useCallback((entry) => setLog(prev => [...prev, entry]), [])
+
+  const genParams = async () => {
+    setGenLoading(true); setError(''); setLog([]); setResult(null); setCheatResult(null)
+    try {
+      const r = await pa18api.post('/api/pa18/gen-params', { bits: groupBits })
+      setParams(r.data)
+      addLog({ step: '⚙', from: 'System', to: 'Both', type: 'key',
+        content: `Generated ${groupBits}-bit safe-prime group: p = ${short(hexOf(r.data.p))}, g = ${short(hexOf(r.data.g))}` })
+    } catch (e) { setError(e?.response?.data?.detail || 'Failed') }
+    finally { setGenLoading(false) }
+  }
+
+  const runOT = async (b) => {
+    if (!params) { setError('Generate group params first'); return }
+    setLoading(b); setError(''); setLog([]); setResult(null); setCheatResult(null)
+    try {
+      addLog({ step: '1', from: 'Bob', to: 'Bob', type: 'key',
+        content: `Bob generates key pair (pk${b}, sk${b}) honestly, and pk${1-b} without trapdoor (random h ← Z*_p)` })
+
+      const r = await pa18api.post('/api/pa18/ot-run', {
+        p: params.p, q: params.q, g: params.g, b, m0, m1,
+      })
+      const d = r.data
+
+      addLog({ step: '1→', from: 'Bob', to: 'Alice', type: 'send',
+        content: `(pk₀, pk₁) sent to Alice — pk${b} is honest, pk${1-b} has NO trapdoor. pk₀.h = ${short(hexOf(d.pk0_h))}, pk₁.h = ${short(hexOf(d.pk1_h))}` })
+
+      addLog({ step: '2', from: 'Alice', to: 'Alice', type: 'key',
+        content: `Alice encrypts: C₀ = ElGamal_enc(pk₀, m₀=${m0}), C₁ = ElGamal_enc(pk₁, m₁=${m1}) with fresh randomness each` })
+
+      addLog({ step: '2→', from: 'Alice', to: 'Bob', type: 'send',
+        content: `(C₀, C₁) sent to Bob — C${b}: c₁=${short(hexOf(d['C'+b]?.c1))}, c₂=${short(hexOf(d['C'+b]?.c2))}` })
+
+      addLog({ step: '3', from: 'Bob', to: 'Bob', type: 'recv',
+        content: `Bob decrypts C${b} using sk${b} → m${b} = ${d.m_received}. C${1-b} cannot be decrypted (no sk${1-b})` })
+
+      addLog({ step: '✓', from: 'Result', to: 'Bob', type: 'recv',
+        content: `Bob receives m${b} = ${d.m_received} ✓   |   m${1-b} = ?? (hidden, Alice's secret is safe)` })
+
+      setResult(d)
+    } catch (e) { setError(e?.response?.data?.detail || 'OT failed') }
+    finally { setLoading(null) }
+  }
+
+  const runCheat = async () => {
+    if (!params || !result) return
+    setCheatLoading(true)
+    try {
+      const r = await pa18api.post('/api/pa18/sender-privacy', {
+        p: params.p, q: params.q, g: params.g,
+        m0, m1, b: result.b, max_brute: 500,
+      })
+      setCheatResult(r.data)
+      addLog({ step: '🔓', from: 'Bob (cheating)', to: 'C' + (1-result.b), type: 'warn',
+        content: r.data.dlp_solved
+          ? `DLP solved in ${r.data.brute_ms}ms (tiny group!) — not secure at this size`
+          : `Brute-force failed: DLP not solved in ${r.data.brute_ms}ms (tried ${r.data.brute_force_limit} values)` })
+    } catch(e) { setError(e?.response?.data?.detail || 'Cheat failed') }
+    finally { setCheatLoading(false) }
+  }
+
+  const SIZES = [16, 24, 32, 48]
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-(--border) bg-(--code-bg) p-4 space-y-3">
+        <p className="text-xs font-black uppercase tracking-widest text-white">⚙ Shared Group Parameters</p>
+        <div className="flex gap-2 items-center flex-wrap">
+          {SIZES.map(b => (
+            <button key={b} onClick={() => setGroupBits(b)}
+              className={cx('rounded-lg border px-2.5 py-1 text-xs font-black transition-all',
+                groupBits === b ? 'border-purple-500/60 bg-purple-500/20 text-white'
+                                : 'border-(--border) bg-(--bg) text-(--text)/50 hover:text-white'
+              )}>{b}-bit</button>
+          ))}
+          <Btn onClick={genParams} disabled={genLoading} id="pa18-gen-params-btn">
+            {genLoading ? <><Spinner />Generating…</> : `⚡ Generate ${groupBits}-bit Group`}
+          </Btn>
+        </div>
+        {params && (
+          <div className="grid grid-cols-3 gap-2">
+            <KV label="p (safe prime)" value={short(hexOf(params.p), 20)} small />
+            <KV label="q (order)"      value={short(hexOf(params.q), 20)} small />
+            <KV label="g (generator)"  value={short(hexOf(params.g), 20)} small />
+          </div>
+        )}
+        {error && <p className="text-xs text-rose-400 font-black">{error}</p>}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <AlicePanel m0={m0} m1={m1} setM0={setM0} setM1={setM1} revealed={result?.b} />
+        <BobPanel
+          b={result?.b}
+          onChoose={runOT}
+          loading={loading}
+          result={result}
+          onCheat={runCheat}
+          cheatResult={cheatResult}
+          cheatLoading={cheatLoading}
+        />
+      </div>
+
+      {log.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-[10px] font-black uppercase tracking-widest text-(--text)/50">📋 OT Protocol Message Log</p>
+          <div className="space-y-1.5">
+            {log.map((entry, i) => (
+              <LogRow key={i} step={entry.step} from={entry.from} to={entry.to}
+                content={entry.content} type={entry.type} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Correctness Tab ────────────────────────────────────────────────────────────
+
+function CorrectnessTab() {
+  const [trials, setTrials] = useState(100)
+  const [result, setResult] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
   const [error, setError] = useState('')
 
-  function reset() {
-    setSetupData(null); setReceiverData(null); setEncryptData(null)
-    setDecryptData(null); setCheatData(null); setError('')
+  const run = async () => {
+    setLoading(true); setError(''); setResult(null); setElapsed(0)
+    const timer = setInterval(() => setElapsed(s => s + 1), 1000)
+    try {
+      const pg = await pa18api.post('/api/pa18/gen-params', { bits: 32 })
+      const r  = await pa18api.post('/api/pa18/correctness', {
+        p: pg.data.p, q: pg.data.q, g: pg.data.g, n_trials: trials,
+      })
+      setResult(r.data)
+    } catch (e) { setError(e?.response?.data?.detail || 'Failed') }
+    finally { clearInterval(timer); setLoading(false) }
   }
 
-  const handleSetup = useCallback(async () => {
-    reset()
-    setLoadingSetup(true)
-    try {
-      const res = await api.post('/api/pa18/sender-setup')
-      setSetupData(res.data)
-    } catch (e) {
-      setError(e?.response?.data?.detail || 'Setup failed')
-    } finally {
-      setLoadingSetup(false)
-    }
-  }, [])
-
-  const handleReceiverKeys = useCallback(async () => {
-    setReceiverData(null); setEncryptData(null); setDecryptData(null); setCheatData(null)
-    setLoadingKeys(true)
-    try {
-      const res = await api.post('/api/pa18/receiver-keys', {
-        c: setupData.c,
-        b: parseInt(choiceBit, 10),
-      })
-      setReceiverData(res.data)
-    } catch (e) {
-      setError(e?.response?.data?.detail || 'Key generation failed')
-    } finally {
-      setLoadingKeys(false)
-    }
-  }, [setupData, choiceBit])
-
-  const handleEncrypt = useCallback(async () => {
-    setEncryptData(null); setDecryptData(null); setCheatData(null)
-    const m0int = parseInt(m0, 10)
-    const m1int = parseInt(m1, 10)
-    if (![m0int, m1int].every(v => v >= 1 && v < GROUP_P)) {
-      setError(`Messages must be integers in [1, ${GROUP_P - 1}]`)
-      return
-    }
-    setLoadingEncrypt(true)
-    try {
-      const res = await api.post('/api/pa18/sender-encrypt', {
-        pk0: receiverData.pk0,
-        pk1: receiverData.pk1,
-        m0: m0int,
-        m1: m1int,
-      })
-      setEncryptData(res.data)
-    } catch (e) {
-      setError(e?.response?.data?.detail || 'Encryption failed')
-    } finally {
-      setLoadingEncrypt(false)
-    }
-  }, [receiverData, m0, m1])
-
-  const handleDecrypt = useCallback(async () => {
-    setDecryptData(null); setCheatData(null)
-    setLoadingDecrypt(true)
-    try {
-      const res = await api.post('/api/pa18/receiver-decrypt', {
-        k: receiverData.k_private,
-        b: parseInt(choiceBit, 10),
-        A0: encryptData.A0, B0: encryptData.B0,
-        A1: encryptData.A1, B1: encryptData.B1,
-      })
-      setDecryptData(res.data)
-    } catch (e) {
-      setError(e?.response?.data?.detail || 'Decryption failed')
-    } finally {
-      setLoadingDecrypt(false)
-    }
-  }, [receiverData, encryptData, choiceBit])
-
-  const handleCheat = useCallback(async () => {
-    setCheatData(null)
-    setLoadingCheat(true)
-    try {
-      const res = await api.post('/api/pa18/cheat-attempt', {
-        k: receiverData.k_private,
-        A0: encryptData.A0, B0: encryptData.B0,
-        A1: encryptData.A1, B1: encryptData.B1,
-        m0_true: parseInt(m0, 10),
-        m1_true: parseInt(m1, 10),
-      })
-      setCheatData(res.data)
-    } catch (e) {
-      setError(e?.response?.data?.detail || 'Cheat attempt failed')
-    } finally {
-      setLoadingCheat(false)
-    }
-  }, [receiverData, encryptData, m0, m1])
-
-  const b = parseInt(choiceBit, 10)
-
   return (
-    <main className="min-h-screen w-full bg-(--bg) px-1 py-4 text-(--text)">
-      <section className="w-full rounded-2xl border-2 border-(--border) bg-(--bg) p-1 shadow-(--shadow)">
-
-        <PageHeader title="CS8.401 Minicrypt Clique Explorer — PA18: 1-out-of-2 Oblivious Transfer" />
-
-        {/* Protocol overview */}
-        <div className="mx-3 mb-3 rounded-xl border border-(--border) bg-(--code-bg) px-4 py-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-(--text-h) mb-2">Bellare-Micali OT Protocol</p>
-          <p className="text-[12px] text-(--text)/70 leading-relaxed">
-            Alice holds two messages <strong className="text-(--text-h)">m₀, m₁</strong>.
-            Bob chooses a bit <strong className="text-(--text-h)">b</strong> and receives <strong className="text-(--text-h)">m_b</strong>
-            — without Alice learning <strong className="text-(--text-h)">b</strong>,
-            and without Bob learning <strong className="text-(--text-h)">m_{"{1−b}"}</strong>.
-            Built on ElGamal over a toy DLP group (g=5, p=23) for visualization.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <StepBadge step="1" label="Sender Setup (Alice)" done={!!setupData} />
-            <StepBadge step="2" label="Receiver Keys (Bob)" done={!!receiverData} />
-            <StepBadge step="3" label="Sender Encrypt (Alice)" done={!!encryptData} />
-            <StepBadge step="4" label="Receiver Decrypt (Bob)" done={!!decryptData} />
+    <div className="space-y-4">
+      {/* Controls */}
+      <div className="rounded-xl border border-(--border) bg-(--code-bg) p-4 space-y-3">
+        <p className="font-black text-sm text-white">✅ Correctness Test</p>
+        <p className="text-sm text-(--text)/70">
+          Run <strong className="text-white">n</strong> OT trials with random b ∈ {'{ 0, 1 }'} and
+          random (m₀, m₁). Each row shows the full step-by-step explanation of
+          what Bob chose, what Alice encrypted, and whether the decryption matched.
+        </p>
+        <div className="flex gap-4 items-center flex-wrap">
+          <div className="space-y-1">
+            <p className="text-[10px] font-black uppercase tracking-widest text-white">
+              Trials: <span className="text-purple-300">{trials}</span>
+            </p>
+            <input type="range" min={10} max={200} step={10} value={trials}
+              onChange={e => setTrials(Number(e.target.value))}
+              className="w-48 accent-purple-500" />
           </div>
+          <Btn onClick={run} disabled={loading} id="pa18-correctness-btn">
+            {loading ? `Running… (${elapsed}s)` : '▶ Run Correctness Test'}
+          </Btn>
         </div>
+        {error && <p className="text-xs text-rose-400 font-black">{error}</p>}
+      </div>
 
-        {/* Config row */}
-        <div className="mb-4 border-b border-(--border) px-4 py-4 space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-black uppercase tracking-widest text-indigo-300">Alice: Message m₀</p>
-              <input
-                type="number" min="1" max={GROUP_P - 1}
-                value={m0}
-                onChange={e => { setM0(e.target.value); reset() }}
-                className="w-full rounded-xl border border-(--border) bg-(--code-bg) p-2.5 text-sm text-(--text-h) font-mono outline-none focus:border-(--accent-border)"
+      {result && (
+        <div className="space-y-4">
+          {/* Summary banner */}
+          <div className={cx('rounded-xl border-2 p-6 text-center',
+            result.success_rate === 1
+              ? 'border-emerald-500/50 bg-emerald-500/5'
+              : 'border-amber-500/50 bg-amber-500/5'
+          )}>
+            <p className="text-6xl font-black text-emerald-300">
+              {(result.success_rate * 100).toFixed(1)}%
+            </p>
+            <p className="text-sm text-(--text)/70 mt-2">
+              {result.correct}/{result.trials} trials correct — {result.elapsed_ms} ms total
+            </p>
+            <div className="mt-2">
+              <Badge
+                label={result.success_rate === 1 ? '✓ Perfect — Correctness verified!' : 'Some failures'}
+                color={result.success_rate === 1 ? 'green' : 'amber'}
               />
-              <p className="text-[11px] text-(--text)/40 italic">Integer in [1, {GROUP_P - 1}]</p>
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-black uppercase tracking-widest text-indigo-300">Alice: Message m₁</p>
-              <input
-                type="number" min="1" max={GROUP_P - 1}
-                value={m1}
-                onChange={e => { setM1(e.target.value); reset() }}
-                className="w-full rounded-xl border border-(--border) bg-(--code-bg) p-2.5 text-sm text-(--text-h) font-mono outline-none focus:border-(--accent-border)"
-              />
-              <p className="text-[11px] text-(--text)/40 italic">Integer in [1, {GROUP_P - 1}]</p>
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-black uppercase tracking-widest text-pink-300">Bob: Choice bit b</p>
-              <div className="flex gap-2">
-                {[0, 1].map(v => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => { setChoiceBit(String(v)); setReceiverData(null); setDecryptData(null); setCheatData(null) }}
-                    className={`flex-1 rounded-xl border py-2.5 text-sm font-bold transition-all ${
-                      choiceBit === String(v)
-                        ? 'border-pink-500/50 bg-pink-500/10 text-pink-300'
-                        : 'border-(--border) bg-(--code-bg) text-(--text)/50 hover:border-pink-500/30'
-                    }`}
-                  >
-                    b = {v}
-                  </button>
-                ))}
-              </div>
-              <p className="text-[11px] text-(--text)/40 italic">Bob wants m_{choiceBit}</p>
             </div>
           </div>
 
-          {error && (
-            <p className="text-[11px] font-mono font-bold uppercase text-rose-400">{error}</p>
+          {/* Column legend */}
+          <div className="rounded-xl border border-(--border) bg-(--code-bg) px-4 py-3">
+            <p className="text-[10px] font-black uppercase tracking-widest text-purple-300 mb-2">Column Guide</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-1 text-[10px] text-(--text)/60">
+              {[
+                ['#',             'Trial number 1 – ' + result.trials],
+                ['b',             "Bob's random choice bit (0 or 1)"],
+                ['m₀ / m₁',      "Alice's two random plaintexts"],
+                ['Expected (mᵦ)', 'm₀ if b=0, m₁ if b=1'],
+                ['Received',      'Value Bob actually decrypted from Cᵦ'],
+                ['ms',            'Wall-clock time for this single OT run'],
+                ['Status',        'Pass = received equals expected'],
+                ['Explanation',   'Narrative of every protocol step'],
+              ].map(([col, desc]) => (
+                <div key={col} className="flex gap-1">
+                  <span className="font-black text-white shrink-0">{col}:</span>
+                  <span>{desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Per-trial scrollable table */}
+          {result.trial_rows?.length > 0 && (
+            <div className="rounded-xl border border-(--border) overflow-hidden">
+              <div className="bg-(--code-bg) border-b border-(--border) px-4 py-2 flex items-center justify-between">
+                <p className="text-[10px] font-black uppercase tracking-widest text-white">
+                  📋 All {result.trials} Trial Rows
+                </p>
+                <div className="flex gap-3 text-[10px] text-(--text)/60">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />Pass
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />Fail
+                  </span>
+                </div>
+              </div>
+              <div className="overflow-y-auto max-h-[480px]">
+                <table className="w-full text-xs border-collapse">
+                  <thead className="sticky top-0 z-10 bg-(--code-bg) border-b border-(--border)">
+                    <tr>
+                      {['#','b','m₀','m₁','Expected (mᵦ)','Received','ms','Status','Explanation'].map(h => (
+                        <th key={h} className="text-left px-3 py-2 text-[9px] font-black uppercase tracking-widest text-(--text)/50 whitespace-nowrap">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.trial_rows.map(row => (
+                      <tr key={row.trial}
+                        className={cx(
+                          'border-b border-(--border)/30 transition-colors hover:brightness-110',
+                          row.correct ? 'bg-emerald-500/[0.03]' : 'bg-rose-500/[0.06]'
+                        )}
+                      >
+                        <td className="px-3 py-2 font-black text-(--text)/40 w-8">{row.trial}</td>
+                        <td className="px-3 py-2">
+                          <span className={cx(
+                            'inline-flex items-center justify-center w-5 h-5 rounded font-black text-[10px]',
+                            row.b === 0 ? 'bg-blue-500/20 text-blue-300' : 'bg-purple-500/20 text-purple-300'
+                          )}>{row.b}</span>
+                        </td>
+                        <td className="px-3 py-2 font-mono text-(--text)/60">{row.m0}</td>
+                        <td className="px-3 py-2 font-mono text-(--text)/60">{row.m1}</td>
+                        <td className="px-3 py-2 font-mono font-black text-amber-300">{row.expected}</td>
+                        <td className={cx('px-3 py-2 font-mono font-black',
+                          row.correct ? 'text-emerald-300' : 'text-rose-300'
+                        )}>{row.received}</td>
+                        <td className="px-3 py-2 font-mono text-(--text)/35 text-[10px] whitespace-nowrap">{row.ms} ms</td>
+                        <td className="px-3 py-2">
+                          <Badge label={row.correct ? '✓ Pass' : '✗ Fail'} color={row.correct ? 'green' : 'red'} />
+                        </td>
+                        <td className="px-3 py-2 text-(--text)/55 leading-relaxed min-w-[260px] max-w-sm">
+                          {row.desc}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Failures callout */}
+          {result.failures?.length > 0 && (
+            <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-3">
+              <p className="text-xs font-black text-rose-300 mb-2">❌ Failures ({result.failures.length}):</p>
+              {result.failures.map((f, i) => (
+                <p key={i} className="text-xs font-mono text-rose-300">
+                  Trial {f.trial}: b={f.b}, expected={f.expected}, got={f.got}
+                </p>
+              ))}
+            </div>
           )}
         </div>
+      )}
+    </div>
+  )
+}
 
-        {/* Two-column panel */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 px-3 pb-4">
+// ── Privacy Tab ────────────────────────────────────────────────────────────────
 
-          {/* Alice */}
-          <div className="rounded-xl border border-(--border) bg-(--bg) overflow-hidden">
-            <PanelHeader
-              role="alice"
-              title="Sender Protocol"
-              subtitle="Alice runs setup, then encrypts both messages under Bob's public keys"
-            />
-            <div className="p-4 space-y-4">
+function PrivacyTab() {
+  const [recvResult, setRecvResult]   = useState(null)
+  const [recvLoading, setRecvLoading] = useState(false)
+  const [sendResult, setSendResult]   = useState(null)
+  const [sendLoading, setSendLoading] = useState(false)
+  const [params, setParams]           = useState(null)
+  const [error, setError]             = useState('')
 
-              {/* Step 1 */}
-              <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Step 1 — Sender Setup</p>
-                <p className="text-[11px] text-(--text)/60">
-                  Alice picks random <em>x</em>, publishes <strong>c = g<sup>x</sup> mod p</strong> to Bob.
-                  Alice does not reveal <em>x</em>.
-                </p>
-                <Btn onClick={handleSetup} disabled={loadingSetup}>
-                  {loadingSetup ? 'Generating…' : 'Run Setup'}
-                </Btn>
-                {setupData && (
-                  <FieldRow label="Published c = gˣ mod p" value={String(setupData.c)} highlight />
-                )}
-              </div>
+  const ensureParams = async () => {
+    if (params) return params
+    const pg = await pa18api.post('/api/pa18/gen-params', { bits: 32 })
+    setParams(pg.data)
+    return pg.data
+  }
 
-              {/* Step 3 */}
-              {receiverData && (
-                <div className="space-y-2 border-t border-(--border) pt-3">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Step 3 — Encrypt Both Messages</p>
-                  <p className="text-[11px] text-(--text)/60">
-                    Alice receives Bob's keys (PK₀, PK₁) and encrypts m₀ under PK₀, m₁ under PK₁.
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 text-[11px]">
-                    <FieldRow label="Received PK₀" value={String(receiverData.pk0)} />
-                    <FieldRow label="Received PK₁" value={String(receiverData.pk1)} />
-                  </div>
-                  <Btn onClick={handleEncrypt} disabled={loadingEncrypt}>
-                    {loadingEncrypt ? 'Encrypting…' : 'Encrypt m₀ and m₁'}
-                  </Btn>
-                  {encryptData && (
-                    <div className="grid grid-cols-2 gap-2">
-                      <FieldRow label="C₀ = (A₀, B₀)" value={`(${encryptData.A0}, ${encryptData.B0})`} highlight />
-                      <FieldRow label="C₁ = (A₁, B₁)" value={`(${encryptData.A1}, ${encryptData.B1})`} highlight />
-                    </div>
-                  )}
+  const runReceiverPrivacy = async () => {
+    setRecvLoading(true); setError('')
+    try {
+      const p = await ensureParams()
+      const r = await pa18api.post('/api/pa18/receiver-privacy', { p: p.p, q: p.q, g: p.g })
+      setRecvResult(r.data)
+    } catch (e) { setError(e?.response?.data?.detail || 'Failed') }
+    finally { setRecvLoading(false) }
+  }
+
+  const runSenderPrivacy = async () => {
+    setSendLoading(true); setError('')
+    try {
+      const p = await ensureParams()
+      const r = await pa18api.post('/api/pa18/sender-privacy', {
+        p: p.p, q: p.q, g: p.g, m0: '42', m1: '99', b: 0, max_brute: 1000,
+      })
+      setSendResult(r.data)
+    } catch (e) { setError(e?.response?.data?.detail || 'Failed') }
+    finally { setSendLoading(false) }
+  }
+
+  return (
+    <div className="space-y-4">
+      {error && <p className="text-xs text-rose-400 font-black">{error}</p>}
+
+      <div className="rounded-xl border border-purple-500/30 bg-purple-500/5 p-4 space-y-3">
+        <p className="font-black text-sm text-white">🔏 Receiver Privacy — Sender cannot learn b</p>
+        <p className="text-sm text-(--text)/70 leading-relaxed">
+          pk_(1-b) is a random element of Z*_p — no discrete-log known.
+          Under <strong className="text-white">DDH hardness</strong>, both pk₀ and pk₁ are computationally
+          indistinguishable from proper ElGamal public keys. We confirm this statistically.
+        </p>
+        <Btn onClick={runReceiverPrivacy} disabled={recvLoading} id="pa18-recv-priv-btn">
+          {recvLoading ? <><Spinner />Running…</> : '🔏 Run Receiver Privacy Demo (500 samples)'}
+        </Btn>
+        {recvResult && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Honest key h = g^x mod p', data: recvResult.honest_key, color: 'border-blue-500/30 bg-blue-500/5' },
+                { label: 'Trapdoor-free h ← Z*_p',   data: recvResult.random_key, color: 'border-amber-500/30 bg-amber-500/5' },
+              ].map(({ label, data, color }) => (
+                <div key={label} className={cx('rounded-xl border p-3 space-y-2', color)}>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-(--text)/60">{label}</p>
+                  <KV label="mean mod q" value={String(data?.mean_mod_q)} small />
+                  <KV label="std dev"    value={String(data?.std_mod_q)}  small />
                 </div>
-              )}
+              ))}
             </div>
-          </div>
-
-          {/* Bob */}
-          <div className="rounded-xl border border-(--border) bg-(--bg) overflow-hidden">
-            <PanelHeader
-              role="bob"
-              title="Receiver Protocol"
-              subtitle="Bob generates keys hiding his choice bit, then decrypts only his chosen message"
-            />
-            <div className="p-4 space-y-4">
-
-              {/* Step 2 */}
-              <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Step 2 — Generate Key Pair</p>
-                <p className="text-[11px] text-(--text)/60">
-                  Bob picks random <em>k</em>.
-                  Sets <strong>PK_b = g<sup>k</sup></strong>, <strong>PK_{'{1−b}'} = c / PK_b</strong>.
-                  Sends (PK₀, PK₁) — Alice can't tell which is the real key.
-                </p>
-                <Btn onClick={handleReceiverKeys} disabled={loadingKeys || !setupData} variant="secondary">
-                  {loadingKeys ? 'Generating…' : `Generate Keys (b = ${choiceBit})`}
-                </Btn>
-                {!setupData && (
-                  <p className="text-[11px] italic text-(--text)/30">Waiting for Alice's setup…</p>
-                )}
-                {receiverData && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <FieldRow
-                      label={`PK₀${b === 0 ? ' ← real (g^k)' : ' ← decoy'}`}
-                      value={String(receiverData.pk0)}
-                      highlight={b === 0}
-                    />
-                    <FieldRow
-                      label={`PK₁${b === 1 ? ' ← real (g^k)' : ' ← decoy'}`}
-                      value={String(receiverData.pk1)}
-                      highlight={b === 1}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Step 4 */}
-              {encryptData && (
-                <div className="space-y-2 border-t border-(--border) pt-3">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Step 4 — Decrypt Chosen Message</p>
-                  <p className="text-[11px] text-(--text)/60">
-                    Bob computes <strong>m_b = B_b · (A_b<sup>k</sup>)⁻¹ mod p</strong>.
-                    He can only decrypt the ciphertext encrypted under PK_b = g<sup>k</sup>.
-                  </p>
-                  <Btn onClick={handleDecrypt} disabled={loadingDecrypt} variant="secondary">
-                    {loadingDecrypt ? 'Decrypting…' : `Decrypt m${choiceBit}`}
-                  </Btn>
-                  {decryptData && (
-                    <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 space-y-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Result</p>
-                      <p className="font-mono text-xl font-black text-emerald-300">m_{choiceBit} = {decryptData.message}</p>
-                      <p className="text-[11px] text-emerald-300/60">
-                        {decryptData.message === parseInt(m0, 10) && b === 0 ? '✓ Matches Alice\'s m₀' : ''}
-                        {decryptData.message === parseInt(m1, 10) && b === 1 ? '✓ Matches Alice\'s m₁' : ''}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Cheat attempt */}
-                  {decryptData && (
-                    <div className="border-t border-(--border) pt-3 space-y-2">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-rose-500/70">Privacy Demonstration</p>
-                      <p className="text-[11px] text-(--text)/60">
-                        Can Bob use his private key <em>k</em> to also decrypt m_{1 - b}?
-                      </p>
-                      <Btn onClick={handleCheat} disabled={loadingCheat} variant="ghost">
-                        {loadingCheat ? 'Attempting…' : 'Try Cheat — Get Both Messages'}
-                      </Btn>
-                      {cheatData && (
-                        <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-3 space-y-2">
-                          <div className="grid grid-cols-2 gap-2 text-[11px]">
-                            <div>
-                              <p className="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-1">
-                                m₀ attempt {cheatData.m0_correct ? '✓' : '✗'}
-                              </p>
-                              <p className={`font-mono font-black ${cheatData.m0_correct ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                {cheatData.m0_attempt}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-1">
-                                m₁ attempt {cheatData.m1_correct ? '✓' : '✗'}
-                              </p>
-                              <p className={`font-mono font-black ${cheatData.m1_correct ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                {cheatData.m1_attempt}
-                              </p>
-                            </div>
-                          </div>
-                          <p className="text-[11px] text-(--text)/50 italic leading-relaxed">
-                            {cheatData.explanation}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Protocol transcript */}
-        {setupData && (
-          <div className="mx-3 mb-4 rounded-xl border border-(--border) bg-(--code-bg) p-4 space-y-3">
-            <p className="text-[10px] font-black uppercase tracking-widest text-(--text-h)">Protocol Transcript</p>
-            <div className="space-y-3">
-              <TranscriptEntry step="1" from="Alice" to="Bob" label="c = gˣ mod p" value={String(setupData.c)} />
-              {receiverData && (
-                <TranscriptEntry step="2" from="Bob" to="Alice" label="(PK₀, PK₁)" value={`(${receiverData.pk0}, ${receiverData.pk1})`} />
-              )}
-              {encryptData && (
-                <TranscriptEntry step="3" from="Alice" to="Bob" label="(C₀, C₁) = ((A₀,B₀),(A₁,B₁))"
-                  value={`C₀=(${encryptData.A0},${encryptData.B0})  C₁=(${encryptData.A1},${encryptData.B1})`} />
-              )}
-              {decryptData && (
-                <TranscriptEntry step="4" from="Bob" to="" label={`locally: m${choiceBit} = B${choiceBit}·(A${choiceBit}^k)⁻¹ mod p`}
-                  value={`m${choiceBit} = ${decryptData.message}`} />
-              )}
+            <div className={cx('rounded-xl border-2 px-4 py-3',
+              recvResult.indistinguishable ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-amber-500/40 bg-amber-500/5'
+            )}>
+              <Badge label={recvResult.indistinguishable ? '✓ Statistically indistinguishable' : 'Distinguishable (unexpected)'}
+                color={recvResult.indistinguishable ? 'green' : 'amber'} />
+              <p className="text-xs text-(--text)/60 mt-2 leading-relaxed">{recvResult.explanation}</p>
             </div>
           </div>
         )}
+      </div>
 
+      <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4 space-y-3">
+        <p className="font-black text-sm text-white">🔒 Sender Privacy — Receiver cannot decrypt C_(1-b)</p>
+        <p className="text-sm text-(--text)/70 leading-relaxed">
+          The receiver has no sk_(1-b).
+          Decrypting C_(1-b) requires computing the discrete log of h_(1-b) — solving ElGamal DLP.
+          We demonstrate by attempting brute-force (fails for proper group sizes).
+        </p>
+        <Btn onClick={runSenderPrivacy} disabled={sendLoading} id="pa18-sender-priv-btn">
+          {sendLoading ? <><Spinner />Attacking…</> : '🔓 Run Cheat Attempt (Brute-Force DLP)'}
+        </Btn>
+        {sendResult && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <KV label="Group bits"  value={`${sendResult.bits}-bit`}                    small />
+              <KV label="DLP solved"  value={String(sendResult.dlp_solved)}
+                color={sendResult.dlp_solved ? 'text-rose-300' : 'text-emerald-300'}      small />
+              <KV label="Brute limit" value={String(sendResult.brute_force_limit)}        small />
+              <KV label="Time"        value={`${sendResult.brute_ms}ms`}                  small />
+            </div>
+            <div className={cx('rounded-xl border-2 px-4 py-3',
+              sendResult.dlp_solved ? 'border-amber-500/40 bg-amber-500/5' : 'border-emerald-500/40 bg-emerald-500/5'
+            )}>
+              <Badge label={sendResult.dlp_solved ? '⚠ DLP solved (group too small!)' : '✅ Cheat failed — DLP hard!'}
+                color={sendResult.dlp_solved ? 'amber' : 'green'} />
+              <p className="text-xs text-(--text)/60 mt-2 leading-relaxed">{sendResult.explanation}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Full Pipeline Tab ──────────────────────────────────────────────────────────
+
+function PipelineTab() {
+  const [bits, setBits]     = useState(32)
+  const [b, setB]           = useState(0)
+  const [m0, setM0]         = useState('42')
+  const [m1, setM1]         = useState('99')
+  const [result, setResult] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
+  const [error, setError]   = useState('')
+
+  const run = async () => {
+    setLoading(true); setError(''); setResult(null); setElapsed(0)
+    const timer = setInterval(() => setElapsed(s => s + 1), 1000)
+    try {
+      const r = await pa18api.post('/api/pa18/full-demo', {
+        bits, b, m0: Number(m0), m1: Number(m1),
+      })
+      setResult(r.data)
+    } catch (e) { setError(e?.response?.data?.detail || 'Failed') }
+    finally { clearInterval(timer); setLoading(false) }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-(--border) bg-(--code-bg) p-4 space-y-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-(--text)/60">m₀</label>
+            <input value={m0} onChange={e => setM0(e.target.value)}
+              className="w-full rounded-lg border border-(--border) bg-(--bg) px-3 py-1.5 text-sm text-white font-mono outline-none focus:border-purple-500/60" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-(--text)/60">m₁</label>
+            <input value={m1} onChange={e => setM1(e.target.value)}
+              className="w-full rounded-lg border border-(--border) bg-(--bg) px-3 py-1.5 text-sm text-white font-mono outline-none focus:border-purple-500/60" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] font-black uppercase tracking-widest text-(--text)/60">Choice bit b</p>
+            <div className="flex gap-2">
+              {[0, 1].map(v => (
+                <button key={v} onClick={() => setB(v)}
+                  className={cx('flex-1 rounded-lg border px-2 py-1.5 text-xs font-black transition-all',
+                    b === v ? 'border-emerald-500/60 bg-emerald-500/20 text-white'
+                            : 'border-(--border) bg-(--bg) text-(--text)/50 hover:text-white'
+                  )}>{v}</button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] font-black uppercase tracking-widest text-(--text)/60">Group bits</p>
+            <div className="flex gap-1">
+              {[16, 24, 32, 48].map(v => (
+                <button key={v} onClick={() => setBits(v)}
+                  className={cx('flex-1 rounded-lg border px-1 py-1.5 text-[10px] font-black transition-all',
+                    bits === v ? 'border-purple-500/60 bg-purple-500/20 text-white'
+                               : 'border-(--border) bg-(--bg) text-(--text)/50 hover:text-white'
+                  )}>{v}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <Btn onClick={run} disabled={loading} id="pa18-pipeline-btn">
+          {loading ? `Running… (${elapsed}s)` : '▶ Run Full OT Demo'}
+        </Btn>
+        {error && <p className="text-xs text-rose-400 font-black">{error}</p>}
+      </div>
+
+      {result && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { label: 'Group setup',      val: `${result.setup_ms}ms`,           color: 'text-blue-300'    },
+              { label: 'Step 1 (keygen)',  val: `${result.ot_run?.step1_ms}ms`,   color: 'text-purple-300'  },
+              { label: 'Step 2 (encrypt)', val: `${result.ot_run?.step2_ms}ms`,   color: 'text-amber-300'   },
+              { label: 'Step 3 (decrypt)', val: `${result.ot_run?.step3_ms}ms`,   color: 'text-emerald-300' },
+            ].map(({ label, val, color }) => (
+              <div key={label} className="rounded-xl border border-(--border) bg-(--code-bg) p-2 text-center">
+                <p className="text-[9px] font-black uppercase tracking-widest text-(--text)/40">{label}</p>
+                <p className={cx('font-mono text-sm font-black mt-1', color)}>{val}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className={cx('rounded-xl border-2 p-4 space-y-3',
+            result.ot_run?.correct ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-rose-500/40 bg-rose-500/5'
+          )}>
+            <div className="flex items-center gap-3">
+              <span className="text-xl">{result.ot_run?.correct ? '✅' : '❌'}</span>
+              <span className="font-black text-sm">OT Result: Bob chose b={b}, received m{b}={result.ot_run?.m_received}</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <KV label="m₀ (Alice)"          value={String(result.ot_run?.m0)}         small />
+              <KV label="m₁ (Alice)"          value={String(result.ot_run?.m1)}         small />
+              <KV label={`m${b} received`}    value={String(result.ot_run?.m_received)} color="text-emerald-300" small />
+              <KV label={`m${1-b} (hidden)`}  value="??"                                color="text-(--text)/30" small />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-300">50-Trial Correctness</p>
+              <p className="text-3xl font-black text-emerald-300">
+                {(parseFloat(result.correctness?.success_rate ?? 1) * 100).toFixed(0)}%
+              </p>
+              <p className="text-xs text-(--text)/60">
+                {result.correctness?.correct}/{result.correctness?.trials} correct in {result.correctness?.elapsed_ms}ms
+              </p>
+            </div>
+            <div className="rounded-xl border border-purple-500/30 bg-purple-500/5 p-3 space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-purple-300">Receiver Privacy</p>
+              <Badge
+                label={result.receiver_privacy?.indistinguishable ? '✓ Indistinguishable (DDH)' : 'Distinguishable'}
+                color={result.receiver_privacy?.indistinguishable ? 'green' : 'red'}
+              />
+              <p className="text-xs text-(--text)/60">Sender cannot learn b from (pk₀, pk₁)</p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-purple-500/20 bg-(--code-bg) px-4 py-3">
+            <p className="text-[10px] font-black uppercase tracking-widest text-purple-300 mb-1">Full Dependency Lineage</p>
+            <div className="text-xs font-mono text-(--text)/50 space-y-0.5">
+              <p>PA#18 → ot_receiver_step1 / ot_sender_step / ot_receiver_step2</p>
+              <p>PA#18 → PA#16 (elgamal_enc / elgamal_dec)</p>
+              <p>PA#16 → PA#11 (gen_dh_params, safe prime p=2q+1)</p>
+              <p>PA#16 → PA#13 (mod_exp)</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────────
+
+const TABS = [
+  { key: 'demo',        label: '🎭 Alice & Bob'    },
+  { key: 'correctness', label: '✅ Correctness'     },
+  { key: 'privacy',     label: '🔏 Privacy Proofs'  },
+  { key: 'pipeline',    label: '🔄 Full Pipeline'   },
+]
+
+export default function OTDemo() {
+  const [tab, setTab] = useState('demo')
+
+  return (
+    <main className="min-h-screen w-full bg-(--bg) px-5 py-6 text-(--text) md:px-4">
+      <section className="w-full rounded-2xl border-2 border-(--border) bg-(--bg) p-3 shadow-(--shadow)">
+        <PageHeader title="CS8.401 Minicrypt Clique Explorer — PA#18: Oblivious Transfer (1-out-of-2 OT)" />
+
+        <div className="mb-4 rounded-xl border border-(--border) bg-(--code-bg) px-4 py-3 space-y-1">
+          <p className="text-[13px] font-black uppercase tracking-widest text-white">
+            Bellare-Micali OT from ElGamal PKC
+          </p>
+          <p className="text-sm text-(--text)/70 leading-relaxed">
+            <strong className="text-white">1-out-of-2 OT</strong>: Sender Alice has (m₀, m₁). Receiver Bob has choice bit b.
+            Bob learns m_b and <em>nothing</em> about m_(1-b). Alice learns <em>nothing</em> about b.
+            Built entirely on <strong className="text-purple-300">PA#16 ElGamal</strong> (→PA#11→PA#13).
+            The key insight: Bob generates pk_(1-b) without a trapdoor — Alice cannot tell which is "real"
+            (DDH hardness), and Bob cannot decrypt with the unknown sk_(1-b) (DLP hardness).
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+            {[
+              { title: 'Step 1 — Receiver', items: ['pk_b ← ElGamal keygen (honest)', 'pk_{1-b} ← random Z*_p (no DLog!)', 'Send (pk₀, pk₁) to sender'] },
+              { title: 'Step 2 — Sender',   items: ['C₀ = ElGamal_enc(pk₀, m₀)',      'C₁ = ElGamal_enc(pk₁, m₁)',          'Send (C₀, C₁) to receiver'] },
+              { title: 'Step 3 — Receiver', items: ['Decrypt: m_b = ElGamal_dec(sk_b, C_b)', 'C_{1-b} cannot be decrypted', '(No sk_{1-b} → DLP required)'] },
+            ].map(({ title, items }) => (
+              <div key={title} className="rounded-lg border border-(--border) p-2.5 space-y-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-purple-300">{title}</p>
+                {items.map(s => <p key={s} className="text-[11px] text-(--text)/60 font-mono">{s}</p>)}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-(--border)">
+          <div className="border-b border-(--border) bg-(--code-bg) px-3 py-2">
+            <div className="flex gap-1 flex-wrap">
+              {TABS.map(t => (
+                <button key={t.key} onClick={() => setTab(t.key)}
+                  className={cx(
+                    'rounded-lg px-3 py-1.5 text-xs font-black transition-all',
+                    tab === t.key
+                      ? 'bg-purple-500/20 border border-purple-500/50 text-white'
+                      : 'text-(--text)/60 hover:text-white hover:bg-(--code-bg)'
+                  )}>{t.label}</button>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-4 min-h-[520px]">
+            {tab === 'demo'        && <OTDemoTab />}
+            {tab === 'correctness' && <CorrectnessTab />}
+            {tab === 'privacy'     && <PrivacyTab />}
+            {tab === 'pipeline'    && <PipelineTab />}
+          </div>
+        </div>
       </section>
     </main>
   )

@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { X } from 'lucide-react'
 import api from '../../lib/api'
 import NavSidebar from '../../components/NavSidebar'
 
@@ -162,7 +163,7 @@ export default function PA5LengthExtension() {
         { 
           id: `dc-${prev.length + 2}`, 
           role: 'challenger', 
-          text: `Verdict: ${success ? 'ACCEPTED ✅ (Attack Successful!)' : 'REJECTED ❌ (Try again)'}` 
+          text: `Verdict: ${success ? 'ACCEPTED (Attack Successful!)' : 'REJECTED (Try again)'}`
         },
       ])
     } catch (err) {
@@ -335,7 +336,7 @@ export default function PA5LengthExtension() {
           <div className="w-full max-w-2xl rounded-xl border border-(--border) bg-(--bg) p-6 shadow-2xl">
             <div className="mb-4 flex items-center justify-between border-b border-(--border) pb-3">
               <h3 className="text-lg font-bold text-(--text-h)">Construction Mechanics</h3>
-              <button onClick={() => setShowPaddingModal(false)} className="text-(--text) hover:text-(--text-h) text-xl">✕</button>
+              <button onClick={() => setShowPaddingModal(false)} className="text-(--text) hover:text-(--text-h)"><X className="w-5 h-5" /></button>
             </div>
             <div className="space-y-4 text-left">
               <div>

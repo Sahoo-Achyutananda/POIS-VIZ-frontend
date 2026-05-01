@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { AlertTriangle, Check, CheckCircle2, XCircle } from 'lucide-react'
 import api from '../../lib/api'
 import {
   getErrorText,
@@ -244,7 +245,7 @@ export default function PA6Malleability() {
                                 {cpaResult.plaintext ? `Result: ${cpaResult.plaintext}` : <span className="opacity-50 text-xs text-(--text)">[Waiting...]</span>}
                             </div>
                             <p className={`text-[10px] font-bold inline-flex items-center gap-1 ${cpaResult.plaintext !== message ? 'text-[#f87171]' : 'text-[#34d399]'}`}>
-                                {cpaResult.plaintext !== message ? '⚠️ MALLEABILITY DETECTED' : '✓ Unchanged / Correct'}
+                                {cpaResult.plaintext !== message ? <><AlertTriangle className="w-3 h-3" /> MALLEABILITY DETECTED</> : <><Check className="w-3 h-3" /> Unchanged / Correct</>}
                             </p>
                         </div>
                     </article>
@@ -258,7 +259,7 @@ export default function PA6Malleability() {
                                 {ccaResult.plaintext ? `Result: ${ccaResult.plaintext}` : <span className="opacity-50 text-xs text-(--text)">[Waiting...]</span>}
                             </div>
                             <p className={`text-[10px] font-bold inline-flex items-center gap-1 ${ccaResult.plaintext === '⊥ (Rejected)' ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
-                                {ccaResult.plaintext === '⊥ (Rejected)' ? '✅ TAMPER DETECTED & REJECTED' : '❌ VULNERABLE'}
+                                {ccaResult.plaintext === '⊥ (Rejected)' ? <><CheckCircle2 className="w-3 h-3" /> TAMPER DETECTED & REJECTED</> : <><XCircle className="w-3 h-3" /> VULNERABLE</>}
                             </p>
                         </div>
                     </article>
