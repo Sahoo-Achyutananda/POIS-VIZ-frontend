@@ -102,7 +102,13 @@ export const accordionData = [
     link: '/part-4',
     linkText: 'Explore',
     subItems: [
-      { title: 'PA #18 — Oblivious Transfer', description: 'Implement 1-out-of-2 OT using the Bellare-Micali protocol over your own PA #16 ElGamal or PA #12 RSA. Receiver learns m_b without revealing b; sender learns nothing about b. Includes receiver/sender privacy demonstrations.', link: '/pa/18' },
+      {
+        title: 'PA #18 — Oblivious Transfer',
+        description: 'Implement 1-out-of-2 OT using the Bellare-Micali protocol over ElGamal. Receiver learns m_b without revealing b; sender learns nothing about b. Includes receiver/sender privacy demonstrations.',
+        children: [
+          { title: 'Interactive OT Demo', description: 'Step-by-step Bellare-Micali protocol: Alice encrypts both messages, Bob decrypts only his chosen one. Includes a cheat-attempt showing Bob cannot recover the unchosen message.', link: '/pa18/ot' }
+        ]
+      },
       { title: 'PA #19 — Secure AND Gate', description: 'Implement Secure AND from OT (Alice sends (0,a), Bob chooses b, receives a∧b), Secure XOR via additive secret sharing (free, no OT needed), and Secure NOT locally. Verify all four input combinations across 50 runs.', link: '/pa/19' },
       { title: 'PA #20 — All 2-Party Secure Computation (Yao/GMW)', description: 'Build a boolean circuit evaluator using PA #19 gates and securely evaluate three circuits: Millionaire\'s Problem (x>y), secure equality test (x=y), and secure bit-addition (x+y). Full call-stack trace from MPC gate down to Miller-Rabin required.', link: '/pa/20' }
     ]

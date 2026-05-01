@@ -23,6 +23,7 @@ import DLPHashDemo from './pages/PA8/DLPHashDemo.jsx'
 import BirthdayAttackDemo from './pages/PA9/BirthdayAttackDemo.jsx'
 import HMACDemo from './pages/PA10/HMACDemo.jsx'
 import LengthExtensionDemo from './pages/PA10/LengthExtensionDemo.jsx'
+import OTDemo from './pages/PA18/OTDemo.jsx'
 import CliqueExplored from './pages/CliqueExplored.jsx'
 import CliqueExplorer from './pages/CliqueExplorer/index.jsx'
 
@@ -67,6 +68,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/pa9/birthday"        element={<W><BirthdayAttackDemo /></W>} />
         <Route path="/pa10/hmac"            element={<W><HMACDemo /></W>} />
         <Route path="/pa10/length-extension" element={<W><LengthExtensionDemo /></W>} />
+        <Route path="/pa18/ot"               element={<W><OTDemo /></W>} />
         <Route path="/clique-explorer"     element={<W><CliqueExplorer /></W>} />
         <Route path="/clique-explored"     element={<CliqueExplored />} />
       </Routes>
